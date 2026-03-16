@@ -32,7 +32,7 @@ You can either clone the public repository:
 
 .. code-block:: console
 
-    $ git clone --recurse-submodules https://github.com/AllenCellModeling/aicspylibczi
+    $ git clone --recurse-submodules https://github.com/bioio-devs/aicspylibczi
     $ git checkout release/aicspylibczi
 
 Once you have a copy of the source, you can install it with:
@@ -42,5 +42,5 @@ Once you have a copy of the source, you can install it with:
     $ python setup.py install
 
 
-.. _Github repo: https://github.com/AllenCellModeling/aicspylibczi
-.. _tarball: https://github.com/AllenCellModeling/aicspylibczi/tarball/master
+.. _Github repo: https://github.com/bioio-devs/aicspylibczi
+.. _tarball: https://github.com/bioio-devs/aicspylibczi/tarball/master
