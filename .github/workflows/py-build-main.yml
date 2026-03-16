@@ -99,7 +99,7 @@ jobs:
         with:
           submodules: true
 
-      - uses: pypa/cibuildwheel@v2.23.2
+      - uses: pypa/cibuildwheel@v2.23.4
         env:
           CIBW_BUILD: "*-${{ matrix.cibw-arch }}"
           CIBW_BEFORE_ALL_LINUX: yum install -y zlib-devel libpng-devel
