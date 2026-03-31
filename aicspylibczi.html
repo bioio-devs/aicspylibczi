@@ -8,14 +8,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>aicspylibczi package &mdash; aicspylibczi 3.3.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="_static/documentation_options.js?v=9ac01507"></script>
-      <script src="_static/doctools.js?v=9bcbadda"></script>
-      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -110,7 +110,7 @@
 <span id="aicspylibczi-czifile-module"></span><h2>aicspylibczi.CziFile module<a class="headerlink" href="#module-aicspylibczi.CziFile" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="aicspylibczi.CziFile.CziFile">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">aicspylibczi.CziFile.</span></span><span class="sig-name descname"><span class="pre">CziFile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">czi_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BinaryIO</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BufferedIOBase</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BufferedReader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aicspylibczi/CziFile.html#CziFile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aicspylibczi.CziFile.CziFile" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">aicspylibczi.CziFile.</span></span><span class="sig-name descname"><span class="pre">CziFile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">czi_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BinaryIO</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BufferedIOBase</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BufferedReader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aicspylibczi/CziFile.html#CziFile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aicspylibczi.CziFile.CziFile" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Zeiss CZI file object.</p>
 <dl>
@@ -129,17 +129,17 @@
 </div>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="aicspylibczi.CziFile.CziFile.ZISRAW_DIMS">
-<span class="sig-name descname"><span class="pre">ZISRAW_DIMS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'B',</span> <span class="pre">'C',</span> <span class="pre">'H',</span> <span class="pre">'I',</span> <span class="pre">'R',</span> <span class="pre">'S',</span> <span class="pre">'T',</span> <span class="pre">'V',</span> <span class="pre">'Z'}</span></em><a class="headerlink" href="#aicspylibczi.CziFile.CziFile.ZISRAW_DIMS" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">ZISRAW_DIMS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'B',</span> <span class="pre">'C',</span> <span class="pre">'H',</span> <span class="pre">'I',</span> <span class="pre">'R',</span> <span class="pre">'S',</span> <span class="pre">'T',</span> <span class="pre">'V',</span> <span class="pre">'Z'}</span></span><a class="headerlink" href="#aicspylibczi.CziFile.CziFile.ZISRAW_DIMS" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="aicspylibczi.CziFile.CziFile.convert_to_buffer">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">convert_to_buffer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BinaryIO</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BufferedIOBase</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BufferedReader</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">BinaryIO</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/aicspylibczi/CziFile.html#CziFile.convert_to_buffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aicspylibczi.CziFile.CziFile.convert_to_buffer" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">convert_to_buffer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BinaryIO</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BufferedIOBase</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BufferedReader</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">BinaryIO</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/aicspylibczi/CziFile.html#CziFile.convert_to_buffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aicspylibczi.CziFile.CziFile.convert_to_buffer" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="aicspylibczi.CziFile.CziFile.dims">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dims</span></span><a class="headerlink" href="#aicspylibczi.CziFile.CziFile.dims" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">dims</span></span><a class="headerlink" href="#aicspylibczi.CziFile.CziFile.dims" title="Link to this definition"></a></dt>
 <dd><p>Get the dimensions present the binary data (not the metadata)
 M, Y, X, A are included for completeness but can not be used as constraints.</p>
 <dl class="field-list simple">
@@ -485,7 +485,7 @@ bbox.h = The height of the bounding box.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="aicspylibczi.CziFile.CziFile.meta">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">meta</span></span><a class="headerlink" href="#aicspylibczi.CziFile.CziFile.meta" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">meta</span></span><a class="headerlink" href="#aicspylibczi.CziFile.CziFile.meta" title="Link to this definition"></a></dt>
 <dd><p>Extract the metadata block from the czi file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -499,7 +499,7 @@ bbox.h = The height of the bounding box.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="aicspylibczi.CziFile.CziFile.pixel_type">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pixel_type</span></span><a class="headerlink" href="#aicspylibczi.CziFile.CziFile.pixel_type" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">pixel_type</span></span><a class="headerlink" href="#aicspylibczi.CziFile.CziFile.pixel_type" title="Link to this definition"></a></dt>
 <dd><p>The pixelType of the images. If the pixelType is different in the different subblocks it returns Invalid.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -633,7 +633,7 @@ M = 10  # The M_index, this is only valid for Mosaic files!</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="aicspylibczi.CziFile.CziFile.shape_is_consistent">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">shape_is_consistent</span></span><a class="headerlink" href="#aicspylibczi.CziFile.CziFile.shape_is_consistent" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">shape_is_consistent</span></span><a class="headerlink" href="#aicspylibczi.CziFile.CziFile.shape_is_consistent" title="Link to this definition"></a></dt>
 <dd><p>Query if the file shape is consistent across scenes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -647,7 +647,7 @@ M = 10  # The M_index, this is only valid for Mosaic files!</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="aicspylibczi.CziFile.CziFile.size">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">size</span></span><a class="headerlink" href="#aicspylibczi.CziFile.CziFile.size" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">size</span></span><a class="headerlink" href="#aicspylibczi.CziFile.CziFile.size" title="Link to this definition"></a></dt>
 <dd><p>This returns the Size of each dimension in the dims string. So if S had valid indexes of [0, 1, 2, 3, 4]
 the returned tuple would have a value of 5 in the same position as the S occurs in the dims string.</p>
 <dl class="field-list simple">
@@ -671,7 +671,7 @@ the user needs to use dims_shape() to get the indexes.</p>
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-aicspylibczi" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="aicspylibczi.CziFile">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">aicspylibczi.</span></span><span class="sig-name descname"><span class="pre">CziFile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">czi_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BinaryIO</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BufferedIOBase</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BufferedReader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aicspylibczi/CziFile.html#CziFile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aicspylibczi.CziFile" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">aicspylibczi.</span></span><span class="sig-name descname"><span class="pre">CziFile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">czi_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BinaryIO</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BufferedIOBase</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BufferedReader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aicspylibczi/CziFile.html#CziFile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aicspylibczi.CziFile" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Zeiss CZI file object.</p>
 <dl>
@@ -690,17 +690,17 @@ the user needs to use dims_shape() to get the indexes.</p>
 </div>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="aicspylibczi.CziFile.ZISRAW_DIMS">
-<span class="sig-name descname"><span class="pre">ZISRAW_DIMS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'B',</span> <span class="pre">'C',</span> <span class="pre">'H',</span> <span class="pre">'I',</span> <span class="pre">'R',</span> <span class="pre">'S',</span> <span class="pre">'T',</span> <span class="pre">'V',</span> <span class="pre">'Z'}</span></em><a class="headerlink" href="#aicspylibczi.CziFile.ZISRAW_DIMS" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">ZISRAW_DIMS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'B',</span> <span class="pre">'C',</span> <span class="pre">'H',</span> <span class="pre">'I',</span> <span class="pre">'R',</span> <span class="pre">'S',</span> <span class="pre">'T',</span> <span class="pre">'V',</span> <span class="pre">'Z'}</span></span><a class="headerlink" href="#aicspylibczi.CziFile.ZISRAW_DIMS" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="aicspylibczi.CziFile.convert_to_buffer">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">convert_to_buffer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BinaryIO</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BufferedIOBase</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BufferedReader</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">BinaryIO</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/aicspylibczi/CziFile.html#CziFile.convert_to_buffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aicspylibczi.CziFile.convert_to_buffer" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">convert_to_buffer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BinaryIO</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BufferedIOBase</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BufferedReader</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">BinaryIO</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/aicspylibczi/CziFile.html#CziFile.convert_to_buffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aicspylibczi.CziFile.convert_to_buffer" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="aicspylibczi.CziFile.dims">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dims</span></span><a class="headerlink" href="#aicspylibczi.CziFile.dims" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">dims</span></span><a class="headerlink" href="#aicspylibczi.CziFile.dims" title="Link to this definition"></a></dt>
 <dd><p>Get the dimensions present the binary data (not the metadata)
 M, Y, X, A are included for completeness but can not be used as constraints.</p>
 <dl class="field-list simple">
@@ -1046,7 +1046,7 @@ bbox.h = The height of the bounding box.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="aicspylibczi.CziFile.meta">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">meta</span></span><a class="headerlink" href="#aicspylibczi.CziFile.meta" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">meta</span></span><a class="headerlink" href="#aicspylibczi.CziFile.meta" title="Link to this definition"></a></dt>
 <dd><p>Extract the metadata block from the czi file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1060,7 +1060,7 @@ bbox.h = The height of the bounding box.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="aicspylibczi.CziFile.pixel_type">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pixel_type</span></span><a class="headerlink" href="#aicspylibczi.CziFile.pixel_type" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">pixel_type</span></span><a class="headerlink" href="#aicspylibczi.CziFile.pixel_type" title="Link to this definition"></a></dt>
 <dd><p>The pixelType of the images. If the pixelType is different in the different subblocks it returns Invalid.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -1194,7 +1194,7 @@ M = 10  # The M_index, this is only valid for Mosaic files!</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="aicspylibczi.CziFile.shape_is_consistent">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">shape_is_consistent</span></span><a class="headerlink" href="#aicspylibczi.CziFile.shape_is_consistent" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">shape_is_consistent</span></span><a class="headerlink" href="#aicspylibczi.CziFile.shape_is_consistent" title="Link to this definition"></a></dt>
 <dd><p>Query if the file shape is consistent across scenes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1208,7 +1208,7 @@ M = 10  # The M_index, this is only valid for Mosaic files!</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="aicspylibczi.CziFile.size">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">size</span></span><a class="headerlink" href="#aicspylibczi.CziFile.size" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">size</span></span><a class="headerlink" href="#aicspylibczi.CziFile.size" title="Link to this definition"></a></dt>
 <dd><p>This returns the Size of each dimension in the dims string. So if S had valid indexes of [0, 1, 2, 3, 4]
 the returned tuple would have a value of 5 in the same position as the S occurs in the dims string.</p>
 <dl class="field-list simple">
@@ -1235,7 +1235,7 @@ the user needs to use dims_shape() to get the indexes.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2019-2025, Allen Institute for Cell Science.</p>
+    <p>&#169; Copyright 2019-2026, Allen Institute for Cell Science.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
