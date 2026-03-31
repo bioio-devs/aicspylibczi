@@ -17,7 +17,8 @@ class FilePtrException : public std::runtime_error
 public:
   explicit FilePtrException(const std::string& message_)
     : std::runtime_error("File Pointer Exception: " + message_)
-  {}
+  {
+  }
 };
 
 class PixelTypeException : public std::runtime_error
@@ -56,7 +57,8 @@ public:
   ImageAccessUnderspecifiedException(size_t given_, size_t required_, const std::string& message_)
     : std::runtime_error("Dimensions underspecified, given " + std::to_string(given_) + " dimensions but " +
                          std::to_string(required_) + " needed! \n\t" + message_)
-  {}
+  {
+  }
 };
 
 class ImageIteratorException : public std::runtime_error
@@ -64,7 +66,8 @@ class ImageIteratorException : public std::runtime_error
 public:
   explicit ImageIteratorException(const std::string& message_)
     : std::runtime_error("ImageIteratorException: " + message_)
-  {}
+  {
+  }
 };
 
 class ImageSplitChannelException : public std::runtime_error
@@ -74,7 +77,8 @@ public:
     : std::runtime_error("ImageSplitChannelExcetion: " + message_ +
                          " Channel should be zero or unset but has a value of " + std::to_string(channel_) +
                          " not sure how to procede in assigning channels.")
-  {}
+  {
+  }
 };
 
 class ImageCopyAllocFailed
@@ -103,7 +107,8 @@ public:
     : std::runtime_error("The coordinates are overspecified = you have specified a Dimension "
                          "or Dimension value that is not valid. " +
                          message_)
-  {}
+  {
+  }
 };
 
 class CDimCoordinatesUnderspecifiedException : public std::runtime_error // std::exception
@@ -113,7 +118,8 @@ public:
     : std::runtime_error("The coordinates are underspecified = you have not specified a "
                          "Dimension that is required. " +
                          message_)
-  {}
+  {
+  }
 };
 
 class CdimSelectionZeroImagesException : public std::runtime_error
@@ -136,11 +142,12 @@ class StrideAssumptionException : public std::runtime_error
 public:
   explicit StrideAssumptionException(const std::string& message_)
     : std::runtime_error("Image Stride % Width != 0 and/or Stride < Width. Please create an issue at \n"
-                         "https://github.com/AllenCellModeling/aicspylibczi \n"
+                         "https://github.com/bioio-devs/aicspylibczi \n"
                          "your file represents a case I didn't realized existed.\n"
                          "If you can share the file that would be exceptionally helpful. Thank you!\n" +
                          message_)
-  {}
+  {
+  }
 };
 
 class IsMosaicException : public std::runtime_error
@@ -148,7 +155,8 @@ class IsMosaicException : public std::runtime_error
 public:
   explicit IsMosaicException(const std::string& message_)
     : std::runtime_error("This file is a mosaic file but was assumed not to be. " + message_)
-  {}
+  {
+  }
 };
 
 class IsNotMosaicException : public std::runtime_error
@@ -156,7 +164,8 @@ class IsNotMosaicException : public std::runtime_error
 public:
   explicit IsNotMosaicException(const std::string& message_)
     : std::runtime_error("This file is not a mosaic file but was assumed to be. " + message_)
-  {}
+  {
+  }
 };
 
 class SceneIndexException : public std::runtime_error

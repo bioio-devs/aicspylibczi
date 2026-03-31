@@ -1,8 +1,8 @@
 # aicspylibczi
 
-[![C++ Build & Test](https://github.com/AllenCellModeling/aicspylibczi/workflows/C%2B%2B%20Main%20Build/badge.svg)](https://github.com/AllenCellModeling/aicspylibczi/actions)
-[![Python Build & Test](https://github.com/AllenCellModeling/aicspylibczi/workflows/Python%20Build%20Main/badge.svg)](https://github.com/AllenCellModeling/aicspylibczi/actions)
-[![License: GPLv3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/AllenCellModeling/aicspylibczi/blob/master/LICENSE)
+[![C++ Build & Test](https://github.com/bioio-devs/aicspylibczi/workflows/C%2B%2B%20Main%20Build/badge.svg)](https://github.com/bioio-devs/aicspylibczi/actions)
+[![Python Build & Test](https://github.com/bioio-devs/aicspylibczi/workflows/Python%20Build%20Main/badge.svg)](https://github.com/bioio-devs/aicspylibczi/actions)
+[![License: GPLv3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/bioio-devs/aicspylibczi/blob/master/LICENSE)
 
 Python module to expose [libCZI](https://github.com/zeiss-microscopy/libCZI) functionality for reading (subset of) Zeiss
 CZI files and meta-data. We only support 64bit architectures currently if you desperately need 32 bit support please make an issue or modify the source and build it for your use case.
@@ -117,7 +117,7 @@ If you have tried this and are still having trouble please reach out to us and w
 ## Documentation
 
 Documentation is available at
-[github.io](https://allencellmodeling.github.io/aicspylibczi).
+[github.io](https://bioio-devs.github.io/aicspylibczi).
 
 ## Build
 
