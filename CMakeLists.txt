@@ -32,9 +32,15 @@ ENDIF(WIN32)
 SET(pybind11_DIR ${CMAKE_CURRENT_LIST_DIR}/pybind11)
 
 add_compile_definitions(_LIBCZISTATICLIB)
-add_compile_definitions(LIBCZI_BUILD_UNITTESTS=OFF)
-add_compile_definitions(LIBCZI_BUILD_DYNLIB=OFF)
-add_compile_definitions(LIBCZI_BUILD_CZICMD=OFF)
+
+# Turn off the parts of libCZI we do not link against. These must be cache variables because
+# libCZI declares them with option(); as add_compile_definitions() they only became -D
+# preprocessor flags and left the options at their defaults, so every build was fetching
+# googletest from GitHub and compiling libCZI's whole test suite and its dynamic library.
+# The googletest download made configure fail whenever GitHub returned a 503.
+set(LIBCZI_BUILD_UNITTESTS OFF CACHE BOOL "" FORCE)
+set(LIBCZI_BUILD_DYNLIB OFF CACHE BOOL "" FORCE)
+set(LIBCZI_BUILD_CZICMD OFF CACHE BOOL "" FORCE)
 
 # Build libCZI's curl-based http/https stream class so CZI files can be read from URLs.
 # These must be cache variables because libCZI declares them with option().
