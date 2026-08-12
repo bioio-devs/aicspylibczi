@@ -206,9 +206,20 @@ public:
    *
    * @param plane_coord_ A structure containing the Dimension constraints
    * @param index_m_ Is only relevant for mosaic files, if you wish to select one frame.
+   * @param cores_ The number of cores to use to process threads
+   * @param region_ (optional) The {x0, y0, width, height} of a sub-region, in the file's global pixel
+   * coordinate frame (the same frame as read_mosaic's region and as the tile bounding boxes). Subblocks
+   * that do not intersect it are skipped without being read, so for a file being read over the network
+   * their bytes never cross the wire. The default {0, 0, -1, -1} means every matching subblock.
+   *
+   * Note that subblocks are the unit of selection, not pixels: a subblock that merely clips the region
+   * is still returned whole. The saving is in the subblocks not read at all.
    */
   std::pair<ImagesContainerBase::ImagesContainerBasePtr, std::vector<std::pair<char, size_t>>>
-  readSelected(libCZI::CDimCoordinate& plane_coord_, int index_m_ = -1, unsigned int cores_ = 3);
+  readSelected(libCZI::CDimCoordinate& plane_coord_,
+               int index_m_ = -1,
+               unsigned int cores_ = 3,
+               libCZI::IntRect region_ = { 0, 0, -1, -1 });
 
   /*!
    * @brief provide the subblock metadata in index order consistent with readSelected.
@@ -332,7 +343,14 @@ public:
   }
 
 private:
-  Reader::SubblockIndexVec getMatches(SubblockSortable& match_);
+  /*!
+   * @brief Find the subblocks matching a set of dimension constraints.
+   * @param match_ The dimension constraints to match against
+   * @param region_ (optional) If given, only subblocks whose logicalRect intersects this rectangle are
+   * returned. The test runs against the in-memory subblock directory, so a rejected subblock is never
+   * read from the stream.
+   */
+  Reader::SubblockIndexVec getMatches(SubblockSortable& match_, const libCZI::IntRect* region_ = nullptr);
 
   static bool isPyramid0(const libCZI::SubBlockInfo& info_)
   {

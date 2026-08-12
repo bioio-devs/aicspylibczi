@@ -51,6 +51,19 @@ PYBIND11_MODULE(_aicspylibczi, m)
   // that is confined to the pybind11 casters, which run before and after the guard.
   using ReleaseGil = py::call_guard<py::gil_scoped_release>;
 
+  // BBox is registered before Reader because pybind11 converts py::arg default values at .def()
+  // time, and Reader::read_selected takes a default-valued IntRect region.
+  py::class_<libCZI::IntRect>(m, "BBox")
+    .def(py::init<>())
+    .def("__eq__",
+         [](const libCZI::IntRect& a, const libCZI::IntRect& b) {
+           return (a.x == b.x && a.y == b.y && a.w == b.w && a.h == b.h);
+         })
+    .def_readwrite("x", &libCZI::IntRect::x)
+    .def_readwrite("y", &libCZI::IntRect::y)
+    .def_readwrite("w", &libCZI::IntRect::w)
+    .def_readwrite("h", &libCZI::IntRect::h);
+
   py::class_<pylibczi::Reader>(m, "Reader")
     .def(py::init<std::shared_ptr<libCZI::IStream>>(), ReleaseGil())
     .def_static(
@@ -71,7 +84,15 @@ PYBIND11_MODULE(_aicspylibczi, m)
     .def("read_dims_string", &pylibczi::Reader::dimsString, ReleaseGil())
     .def("read_dims_sizes", &pylibczi::Reader::dimSizes, ReleaseGil())
     .def("read_meta", &pylibczi::Reader::readMeta, ReleaseGil())
-    .def("read_selected", &pylibczi::Reader::readSelected, ReleaseGil())
+    // Defaults are spelled out here so existing three-argument calls keep working now that
+    // readSelected takes a region.
+    .def("read_selected",
+         &pylibczi::Reader::readSelected,
+         py::arg("plane_coord"),
+         py::arg("index_m") = -1,
+         py::arg("cores") = 3,
+         py::arg("region") = libCZI::IntRect{ 0, 0, -1, -1 },
+         ReleaseGil())
     .def("read_meta_from_subblock", &pylibczi::Reader::readSubblockMeta, ReleaseGil())
     .def("read_mosaic", &pylibczi::Reader::readMosaic, ReleaseGil())
     .def("read_tile_bounding_box", &pylibczi::Reader::tileBoundingBox, ReleaseGil())
@@ -93,17 +114,6 @@ PYBIND11_MODULE(_aicspylibczi, m)
     .def("m_index", &pylibczi::IndexMap::mIndex);
 
   py::class_<libCZI::CDimCoordinate>(m, "DimCoord").def(py::init<>()).def("set_dim", &libCZI::CDimCoordinate::Set);
-
-  py::class_<libCZI::IntRect>(m, "BBox")
-    .def(py::init<>())
-    .def("__eq__",
-         [](const libCZI::IntRect& a, const libCZI::IntRect& b) {
-           return (a.x == b.x && a.y == b.y && a.w == b.w && a.h == b.h);
-         })
-    .def_readwrite("x", &libCZI::IntRect::x)
-    .def_readwrite("y", &libCZI::IntRect::y)
-    .def_readwrite("w", &libCZI::IntRect::w)
-    .def_readwrite("h", &libCZI::IntRect::h);
 
   py::class_<libCZI::RgbFloatColor>(m, "RgbFloat")
     .def(py::init<>())

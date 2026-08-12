@@ -562,7 +562,7 @@ class CziFile(object):
             root.append(new_element)
         return root
 
-    def read_image(self, **kwargs):
+    def read_image(self, region: Tuple = None, **kwargs):
         """
         Read the subblocks in the CZI file and for any subblocks that match all the constraints in kwargs return
         that data. This allows you to select channels/scenes/time-points/Z-slices etc. Note if passed a BGR image
@@ -572,6 +572,12 @@ class CziFile(object):
 
         Parameters
         ----------
+        region: Tuple
+            The (x, y, width, height) of a sub-region to restrict the read to, in the file's global
+            pixel coordinate frame -- the same frame as read_mosaic's region and as the tile bounding
+            boxes, which for a mosaic file is NOT the tile-local frame. Subblocks that do not
+            intersect it are skipped without being read, so for a file being read over the network
+            their bytes never cross the wire. The default of None reads every matching subblock.
         **kwargs
             The keywords below allow you to specify the dimensions that you wish to match. If you
             under-specify the constraints you can easily end up with a massive image stack.
@@ -601,12 +607,20 @@ class CziFile(object):
         packed for a given selection which causes problems when indexing memory. Consequently the M Dimension may
         not match the m_index that is being used in libCZI or displayed in Zeiss' Zen software.
 
+        Subblocks, not pixels, are the unit of region selection. A subblock that merely clips the region is
+        returned whole, at its full size -- the saving is in the subblocks not read at all. A region that
+        excludes some tiles also shortens the M dimension, and since M is repacked densely, position i along M
+        no longer corresponds to m_index i. Use read_all_mosaic_tile_bounding_boxes filtered by the same region
+        to recover which tile is which.
+
         """
         plane_constraints = self._get_coords_from_kwargs(kwargs)
         m_index = self._get_m_index_from_kwargs(kwargs)
         cores = self._get_cores_from_kwargs(kwargs)
 
-        image, shape = self.reader.read_selected(plane_constraints, m_index, cores)
+        image, shape = self.reader.read_selected(
+            plane_constraints, m_index, cores, self._bbox_from_region(region)
+        )
         return image, shape
 
     def read_mosaic(
@@ -656,18 +670,7 @@ class CziFile(object):
         """
         plane_constraints = self._get_coords_from_kwargs(kwargs)
 
-        if region is None:
-            region = self.czilib.BBox()
-            region.w = -1
-            region.h = -1
-        else:
-            assert len(region) == 4
-            tmp = self.czilib.BBox()
-            tmp.x = region[0]
-            tmp.y = region[1]
-            tmp.w = region[2]
-            tmp.h = region[3]
-            region = tmp
+        region = self._bbox_from_region(region)
 
         if background_color is None:
             background_color = self.czilib.RgbFloat()
@@ -687,6 +690,26 @@ class CziFile(object):
         )
 
         return img
+
+    def _bbox_from_region(self, region: Tuple = None):
+        """
+        Convert an (x, y, width, height) tuple into the BBox the C++ layer expects.
+
+        None means "no spatial constraint" and is encoded as a width and height of -1, which the
+        C++ side resolves to the whole image.
+        """
+        bbox = self.czilib.BBox()
+        if region is None:
+            bbox.w = -1
+            bbox.h = -1
+            return bbox
+
+        assert len(region) == 4
+        bbox.x = region[0]
+        bbox.y = region[1]
+        bbox.w = region[2]
+        bbox.h = region[3]
+        return bbox
 
     def _get_coords_from_kwargs(self, kwargs):
         plane_constraints = self.czilib.DimCoord()
