@@ -3,7 +3,8 @@
 import io
 import multiprocessing
 from pathlib import Path
-from typing import BinaryIO, Tuple, Union
+from typing import BinaryIO, Dict, Optional, Tuple, Union
+from urllib.parse import urlparse
 
 import numpy as np
 import xml.etree.ElementTree as ET
@@ -11,14 +12,33 @@ import xml.etree.ElementTree as ET
 from . import types
 
 
+def remote_reads_available() -> bool:
+    """
+    Test whether this installation can read CZI files from http/https URLs.
+
+    Remote reads require that libCZI was compiled with its curl-based stream class,
+    which is a build-time option.
+
+    Returns
+    -------
+    bool
+        True if CziFile accepts http/https URLs.
+
+    """
+    import _aicspylibczi
+
+    return _aicspylibczi.curl_stream_available()
+
+
 class CziFile(object):
     """Zeiss CZI file object.
 
     Args:
-      |  czi_filename (str): Filename of czifile to access.
+      |  czi_filename (str): Filename of czifile to access, or an http/https URL.
 
     Kwargs:
       |  verbose (bool): Print information and times during czi file access.
+      |  stream_options (dict): libCZI stream options, only valid for URLs.
 
     .. note::
 
@@ -48,19 +68,34 @@ class CziFile(object):
     ####
     ZISRAW_DIMS = {"Z", "C", "T", "R", "S", "I", "H", "V", "B"}
 
+    REMOTE_SCHEMES = frozenset({"http", "https"})
+
     def __init__(
         self,
         czi_filename: types.FileLike,
         verbose: bool = False,
+        stream_options: Optional[Dict[str, Union[str, int, bool]]] = None,
     ):
-        # Convert to BytesIO (bytestream)
-        self._bytes = self.convert_to_buffer(czi_filename)
         self.czifile_verbose = verbose
 
         import _aicspylibczi
 
         self.czilib = _aicspylibczi
-        self.reader = self.czilib.Reader(self._bytes)
+
+        if self.is_remote(czi_filename):
+            self._bytes = None
+            self.reader = self.czilib.Reader.from_url(
+                str(czi_filename), stream_options or {}
+            )
+        else:
+            if stream_options:
+                raise ValueError(
+                    "stream_options are only supported for http/https URLs, "
+                    f"received: {czi_filename}"
+                )
+            # Convert to BytesIO (bytestream)
+            self._bytes = self.convert_to_buffer(czi_filename)
+            self.reader = self.czilib.Reader(self._bytes)
 
         self.meta_root = None
 
@@ -415,6 +450,28 @@ class CziFile(object):
 
         """
         return self.reader.is_mosaic()
+
+    @staticmethod
+    def is_remote(file: types.FileLike) -> bool:
+        """
+        Test if the given target is an http/https URL rather than a local file.
+
+        Parameters
+        ----------
+        file
+            The target passed to the constructor.
+
+        Returns
+        -------
+        bool
+            True if the target is an http or https URL.
+
+        """
+        if not isinstance(file, str):
+            return False
+        # Only http/https are checked so that Windows drive letters, ie "C:\\img.czi",
+        # are not mistaken for a URL scheme.
+        return urlparse(file).scheme.lower() in CziFile.REMOTE_SCHEMES
 
     @staticmethod
     def convert_to_buffer(file: types.FileLike) -> Union[BinaryIO, np.ndarray]:

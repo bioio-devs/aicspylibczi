@@ -3,8 +3,9 @@ import numpy as np
 import pytest
 import xml.etree.ElementTree as ET
 
+from pathlib import Path
 
-from aicspylibczi import CziFile
+from aicspylibczi import CziFile, remote_reads_available
 from _aicspylibczi import PylibCZI_CDimCoordinatesOverspecifiedException
 
 
@@ -526,3 +527,88 @@ def test_bgr_plane_data_x(data_dir, fname, p_index, ans_file):
         img, dims = czi.read_image()
         assert img[0, :, :, p_index].shape == ans.shape
         np.testing.assert_array_almost_equal(img[0, :, :, p_index], ans)
+
+
+@pytest.mark.parametrize(
+    "target, expected",
+    [
+        ("https://example.com/image.czi", True),
+        ("http://example.com/image.czi", True),
+        ("HTTPS://example.com/image.czi", True),
+        ("/tmp/image.czi", False),
+        ("image.czi", False),
+        ("C:\\images\\image.czi", False),
+        ("s3://bucket/image.czi", False),
+        (Path("/tmp/image.czi"), False),
+        (io.BytesIO(b"notaurl"), False),
+    ],
+)
+def test_is_remote(target, expected):
+    assert CziFile.is_remote(target) == expected
+
+
+def test_remote_reads_available():
+    assert remote_reads_available()
+
+
+def test_stream_options_rejected_for_local_file(data_dir):
+    with pytest.raises(ValueError):
+        CziFile(data_dir / "s_1_t_1_c_1_z_1.czi", stream_options={"timeout": 30})
+
+
+def test_unknown_stream_option(data_server):
+    with pytest.raises(ValueError):
+        CziFile(f"{data_server}/s_1_t_1_c_1_z_1.czi", stream_options={"nonsense": 1})
+
+
+@pytest.mark.parametrize(
+    "options",
+    [
+        {},
+        {"timeout": 30},
+        {"CurlHttp_Timeout": 30},
+        {"connect_timeout": 10, "follow_location": True, "user_agent": "aicspylibczi"},
+    ],
+)
+def test_remote_stream_options(data_server, options):
+    czi = CziFile(f"{data_server}/s_1_t_1_c_1_z_1.czi", stream_options=options)
+    assert czi.dims == "BCYX"
+
+
+@pytest.mark.parametrize(
+    "fname", ["s_1_t_1_c_1_z_1.czi", "s_3_t_1_c_3_z_5.czi", "RGB-8bit.czi"]
+)
+def test_remote_matches_local(data_dir, data_server, fname):
+    remote = CziFile(f"{data_server}/{fname}")
+    with open(data_dir / fname, "rb") as fp:
+        local = CziFile(czi_filename=fp)
+
+        assert remote.dims == local.dims
+        assert remote.size == local.size
+        assert remote.pixel_type == local.pixel_type
+        assert remote.get_dims_shape() == local.get_dims_shape()
+        assert ET.tostring(remote.meta) == ET.tostring(local.meta)
+
+        remote_img, remote_shape = remote.read_image()
+        local_img, local_shape = local.read_image()
+
+    assert remote_shape == local_shape
+    np.testing.assert_array_equal(remote_img, local_img)
+
+
+def test_remote_mosaic(data_dir, data_server):
+    remote = CziFile(f"{data_server}/mosaic_test.czi")
+    with open(data_dir / "mosaic_test.czi", "rb") as fp:
+        local = CziFile(czi_filename=fp)
+
+        assert remote.is_mosaic()
+        assert remote.get_mosaic_bounding_box() == local.get_mosaic_bounding_box()
+        remote_img = remote.read_mosaic(scale_factor=1.0, C=0)
+        local_img = local.read_mosaic(scale_factor=1.0, C=0)
+
+    np.testing.assert_array_equal(remote_img, local_img)
+
+
+def test_remote_missing_file(data_server):
+    with pytest.raises(RuntimeError):
+        CziFile(f"{data_server}/does_not_exist.czi")

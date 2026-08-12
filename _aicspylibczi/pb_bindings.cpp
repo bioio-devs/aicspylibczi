@@ -1,8 +1,10 @@
+#include <pybind11/gil.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
 #include "IndexMap.h"
 #include "Reader.h"
+#include "UrlStream.h"
 #include "exceptions.h"
 #include "inc_libCZI.h"
 
@@ -12,6 +14,7 @@
 #include "pb_caster_ImagesContainer.h"
 #include "pb_caster_SubblockMetaVec.h"
 #include "pb_caster_libCZI_DimensionIndex.h"
+#include "pb_stream_options.h"
 
 PYBIND11_MODULE(_aicspylibczi, m)
 {
@@ -36,27 +39,52 @@ PYBIND11_MODULE(_aicspylibczi, m)
   py::register_exception<pylibczi::CDimCoordinatesUnderspecifiedException>(
     m, "PylibCZI_CDimCoordinatesUnderspecifiedException");
 
+  m.def("curl_stream_available",
+        &pylibczi::curlStreamAvailable,
+        "True if this build can read CZI files from http/https URLs.");
+  m.def("stream_option_names",
+        &pylibczi::streamOptionNames,
+        "The libCZI property names accepted as stream options by Reader.from_url.");
+
+  // Every Reader call releases the GIL: any of them may read from the stream, which for a
+  // remote file means blocking on the network. Reader itself never touches the Python API -
+  // that is confined to the pybind11 casters, which run before and after the guard.
+  using ReleaseGil = py::call_guard<py::gil_scoped_release>;
+
   py::class_<pylibczi::Reader>(m, "Reader")
-    .def(py::init<std::shared_ptr<libCZI::IStream>>())
-    .def("is_mosaic", &pylibczi::Reader::isMosaic)
-    .def("has_consistent_shape", &pylibczi::Reader::shapeIsConsistent)
-    .def("read_dims", &pylibczi::Reader::readDimsRange)
-    .def("read_dims_string", &pylibczi::Reader::dimsString)
-    .def("read_dims_sizes", &pylibczi::Reader::dimSizes)
-    .def("read_meta", &pylibczi::Reader::readMeta)
-    .def("read_selected", &pylibczi::Reader::readSelected)
-    .def("read_meta_from_subblock", &pylibczi::Reader::readSubblockMeta)
-    .def("read_mosaic", &pylibczi::Reader::readMosaic)
-    .def("read_tile_bounding_box", &pylibczi::Reader::tileBoundingBox)
-    .def("read_scene_bounding_box", &pylibczi::Reader::sceneBoundingBox)
-    .def("read_all_tile_bounding_boxes", &pylibczi::Reader::tileBoundingBoxes)
-    .def("read_all_scene_bounding_boxes", &pylibczi::Reader::allSceneBoundingBoxes)
-    .def("read_mosaic_bounding_box", &pylibczi::Reader::mosaicBoundingBox)
-    .def("read_mosaic_tile_bounding_box", &pylibczi::Reader::mosaicTileBoundingBox)
-    .def("read_mosaic_scene_bounding_box", &pylibczi::Reader::mosaicSceneBoundingBox)
-    .def("read_all_mosaic_tile_bounding_boxes", &pylibczi::Reader::mosaicTileBoundingBoxes)
-    .def("read_all_mosaic_scene_bounding_boxes", &pylibczi::Reader::allMosaicSceneBoundingBoxes)
-    .def_property_readonly("pixel_type", &pylibczi::Reader::pixelType);
+    .def(py::init<std::shared_ptr<libCZI::IStream>>(), ReleaseGil())
+    .def_static(
+      "from_url",
+      [](const std::string& url_, const py::dict& options_) {
+        pylibczi::throwIfCurlStreamUnavailable();
+        auto propertyBag = pb_helpers::streamPropertyBagFromDict(options_);
+        py::gil_scoped_release release;
+        auto stream = pylibczi::createStreamFromUrl(url_, propertyBag);
+        return std::unique_ptr<pylibczi::Reader>(new pylibczi::Reader(std::move(stream)));
+      },
+      py::arg("url"),
+      py::arg("options") = py::dict(),
+      "Open a CZI file from an http/https URL.")
+    .def("is_mosaic", &pylibczi::Reader::isMosaic, ReleaseGil())
+    .def("has_consistent_shape", &pylibczi::Reader::shapeIsConsistent, ReleaseGil())
+    .def("read_dims", &pylibczi::Reader::readDimsRange, ReleaseGil())
+    .def("read_dims_string", &pylibczi::Reader::dimsString, ReleaseGil())
+    .def("read_dims_sizes", &pylibczi::Reader::dimSizes, ReleaseGil())
+    .def("read_meta", &pylibczi::Reader::readMeta, ReleaseGil())
+    .def("read_selected", &pylibczi::Reader::readSelected, ReleaseGil())
+    .def("read_meta_from_subblock", &pylibczi::Reader::readSubblockMeta, ReleaseGil())
+    .def("read_mosaic", &pylibczi::Reader::readMosaic, ReleaseGil())
+    .def("read_tile_bounding_box", &pylibczi::Reader::tileBoundingBox, ReleaseGil())
+    .def("read_scene_bounding_box", &pylibczi::Reader::sceneBoundingBox, ReleaseGil())
+    .def("read_all_tile_bounding_boxes", &pylibczi::Reader::tileBoundingBoxes, ReleaseGil())
+    .def("read_all_scene_bounding_boxes", &pylibczi::Reader::allSceneBoundingBoxes, ReleaseGil())
+    .def("read_mosaic_bounding_box", &pylibczi::Reader::mosaicBoundingBox, ReleaseGil())
+    .def("read_mosaic_tile_bounding_box", &pylibczi::Reader::mosaicTileBoundingBox, ReleaseGil())
+    .def("read_mosaic_scene_bounding_box", &pylibczi::Reader::mosaicSceneBoundingBox, ReleaseGil())
+    .def("read_all_mosaic_tile_bounding_boxes", &pylibczi::Reader::mosaicTileBoundingBoxes, ReleaseGil())
+    .def(
+      "read_all_mosaic_scene_bounding_boxes", &pylibczi::Reader::allMosaicSceneBoundingBoxes, ReleaseGil())
+    .def_property_readonly("pixel_type", &pylibczi::Reader::pixelType, ReleaseGil());
 
   py::class_<pylibczi::IndexMap>(m, "IndexMap")
     .def(py::init<>())

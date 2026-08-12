@@ -99,6 +99,62 @@ img = Image.fromarray(normed_mosaic_data.astype(np.uint8))
 
 ![Mosaic Image](images/mosaic.png)
 
+#### Example 3: Read a czi from a remote URL
+
+`CziFile` accepts `http` and `https` URLs in place of a path. Reads are served by libCZI's
+libcurl-backed stream, which fetches only the byte ranges it needs rather than downloading
+the whole file, so tile and plane access stays cheap on large remote images.
+
+```python
+from aicspylibczi import CziFile
+
+czi = CziFile("https://example.com/data/mosaic_file.czi")
+
+czi.dims  # 'BSCZYX'
+img, shp = czi.read_image(S=0, C=0)
+```
+
+The server must support HTTP range requests. If it does not, libCZI cannot read the file.
+
+Pass `stream_options` to configure the underlying curl stream, for example to set a timeout
+or send a bearer token to an authenticated endpoint:
+
+```python
+czi = CziFile(
+    "https://example.com/data/image.czi",
+    stream_options={
+        "timeout": 60,             # seconds for the whole transfer
+        "connect_timeout": 10,     # seconds for the connection phase
+        "xoauth2_bearer": token,   # OAuth2 access token
+    },
+)
+```
+
+Option names are libCZI's stream properties. Both the full name (`CurlHttp_Timeout`) and its
+short form (`timeout`) are accepted, case- and underscore-insensitively. The full set for your
+installation is available programmatically:
+
+```python
+import _aicspylibczi
+
+_aicspylibczi.stream_option_names()
+# ['CurlHttp_Proxy', 'CurlHttp_UserAgent', 'CurlHttp_Timeout', 'CurlHttp_ConnectTimeout',
+#  'CurlHttp_Xoauth2Bearer', 'CurlHttp_Cookie', 'CurlHttp_SslVerifyPeer', 'CurlHttp_SslVerifyHost',
+#  'CurlHttp_FollowLocation', 'CurlHttp_MaxRedirs', 'CurlHttp_CaInfo', 'CurlHttp_CaInfoBlob']
+```
+
+Remote reads depend on a build-time option, so a build made without the curl stream will
+reject URLs. Check before relying on it:
+
+```python
+from aicspylibczi import remote_reads_available
+
+remote_reads_available()  # True for the published wheels
+```
+
+Object stores that issue presigned URLs (S3, GCS, Azure Blob) work through the same path,
+since a presigned URL is just an authenticated https URL.
+
 ## Installation
 
 The preferred installation method is with `pip install`.
@@ -127,6 +183,10 @@ Use these steps to build and install aicspylibczi locally:
 - Requirements:
   - libCZI requires a c++11 compatible compiler. Built & Tested with clang.
   - Development requirements are those required for libCZI: **libpng**, **zlib**
+  - libcurl is fetched and built automatically to support remote reads. On Linux it needs a TLS
+    backend present at build time (**openssl-devel** / **libssl-dev**) or `https` URLs will not
+    work. macOS uses Secure Transport and Windows uses SChannel, neither of which needs anything
+    installed.
   - Install the package:
     ```
     pip install .
