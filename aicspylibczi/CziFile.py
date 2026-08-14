@@ -16,9 +16,6 @@ def remote_reads_available() -> bool:
     """
     Test whether this installation can read CZI files from http/https URLs.
 
-    Remote reads require that libCZI was compiled with its curl-based stream class,
-    which is a build-time option.
-
     Returns
     -------
     bool
@@ -469,7 +466,6 @@ class CziFile(object):
         """
         if not isinstance(file, str):
             return False
-        # only http/https, so a Windows drive letter is not mistaken for a URL scheme
         return urlparse(file).scheme.lower() in CziFile.REMOTE_SCHEMES
 
     @staticmethod
@@ -572,10 +568,7 @@ class CziFile(object):
         Parameters
         ----------
         region: Tuple
-            The (x, y, width, height) of a sub-region to restrict the read to, in the same global
-            pixel frame as read_mosaic's region and the tile bounding boxes -- for a mosaic file
-            this is NOT the tile-local frame. Subblocks that do not intersect it are skipped
-            without being read. The default of None reads every matching subblock.
+            The (x, y, width, height) of a sub-region to restrict the read.
         **kwargs
             The keywords below allow you to specify the dimensions that you wish to match. If you
             under-specify the constraints you can easily end up with a massive image stack.
@@ -604,11 +597,6 @@ class CziFile(object):
         The M Dimension is a representation of the m_index used inside libCZI. Unfortunately this can be sparsely
         packed for a given selection which causes problems when indexing memory. Consequently the M Dimension may
         not match the m_index that is being used in libCZI or displayed in Zeiss' Zen software.
-
-        Region selection is by subblock and not by pixel, so a subblock that merely clips the region is
-        returned whole. A region that excludes some tiles also shortens M, so use
-        read_all_mosaic_tile_bounding_boxes filtered by the same region to recover which tile is which.
-
         """
         plane_constraints = self._get_coords_from_kwargs(kwargs)
         m_index = self._get_m_index_from_kwargs(kwargs)
@@ -690,8 +678,6 @@ class CziFile(object):
     def _bbox_from_region(self, region: Tuple = None):
         """
         Convert an (x, y, width, height) tuple into the BBox the C++ layer expects.
-
-        None is encoded as a width and height of -1, which the C++ side reads as the whole image.
         """
         bbox = self.czilib.BBox()
         if region is None:

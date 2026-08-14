@@ -15,11 +15,7 @@ def data_dir() -> Path:
 
 
 class RangeRequestHandler(BaseHTTPRequestHandler):
-    """Serves a directory over http with byte-range support.
-
-    libCZI's curl stream rejects any response that delivers more bytes than it asked
-    for, so http.server's stock handler, which ignores Range, cannot be used here.
-    """
+    """Serves a directory over http with byte-range support."""
 
     protocol_version = "HTTP/1.1"
 

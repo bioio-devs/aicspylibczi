@@ -443,7 +443,6 @@ def test_mosaic_image(data_dir, fname, unscaled_size, expects):
 
 @pytest.mark.parametrize("fname", ["mosaic_test.czi"])
 def test_read_image_region_selects_intersecting_subblocks(data_dir, fname):
-    # mosaic_test.czi is two tiles side by side, overlapping in the middle
     czi = CziFile(str(data_dir / fname))
     bbox = czi.get_mosaic_bounding_box()
 
@@ -453,11 +452,9 @@ def test_read_image_region_selects_intersecting_subblocks(data_dir, fname):
     data, shape = czi.read_image(C=0, region=(bbox.x, bbox.y, 64, 64))
     assert dict(shape)["M"] == 1
 
-    # selection is by subblock, so the tile comes back whole rather than cropped
     assert dict(shape)["Y"] == dict(all_tiles)["Y"]
     assert dict(shape)["X"] == dict(all_tiles)["X"]
 
-    # ...and it is the tile the region lands in
     left_tile, _ = czi.read_image(C=0, M=0)
     assert np.array_equal(data, left_tile)
 
@@ -588,7 +585,6 @@ def test_stream_options_rejected_for_local_file(data_dir):
 
 @pytest.mark.raises(exception=ValueError)
 def test_unknown_stream_option():
-    # rejected while building the property bag, so no server is contacted
     CziFile("https://example.com/image.czi", stream_options={"nonsense": 1})
 
 

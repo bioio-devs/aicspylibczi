@@ -11,7 +11,6 @@ const char* kCurlHttpStreamClass = "curl_http_inputstream";
 
 namespace {
 
-/// Lowercase and drop underscores so that "connect_timeout" and "ConnectTimeout" compare equal.
 std::string
 squash(const std::string& str_)
 {

@@ -33,13 +33,12 @@ SET(pybind11_DIR ${CMAKE_CURRENT_LIST_DIR}/pybind11)
 
 add_compile_definitions(_LIBCZISTATICLIB)
 
-# libCZI declares these with option(), so they must be set as cache variables --
-# add_compile_definitions() leaves the options at their defaults.
+
 set(LIBCZI_BUILD_UNITTESTS OFF CACHE BOOL "" FORCE)
 set(LIBCZI_BUILD_DYNLIB OFF CACHE BOOL "" FORCE)
 set(LIBCZI_BUILD_CZICMD OFF CACHE BOOL "" FORCE)
 
-# curl-based http/https stream class, statically linked against a libCZI-pinned libcurl
+# curl-based http/https stream class
 set(LIBCZI_BUILD_CURL_BASED_STREAM ON CACHE BOOL "" FORCE)
 set(LIBCZI_BUILD_PREFER_EXTERNALPACKAGE_LIBCURL OFF CACHE BOOL "" FORCE)
 
@@ -50,8 +49,6 @@ IF (APPLE)
     set(CURL_USE_OPENSSL OFF CACHE BOOL "" FORCE)
 ENDIF(APPLE)
 
-# curl's optional dependencies are auto-detected, so pin them off or the wheel picks up
-# whatever the build machine happens to have. None are needed for range-request GETs.
 set(USE_LIBIDN2 OFF CACHE BOOL "" FORCE)
 set(CURL_USE_LIBPSL OFF CACHE BOOL "" FORCE)
 set(CURL_USE_LIBSSH2 OFF CACHE BOOL "" FORCE)
