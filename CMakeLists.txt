@@ -33,33 +33,25 @@ SET(pybind11_DIR ${CMAKE_CURRENT_LIST_DIR}/pybind11)
 
 add_compile_definitions(_LIBCZISTATICLIB)
 
-# Turn off the parts of libCZI we do not link against. These must be cache variables because
-# libCZI declares them with option(); as add_compile_definitions() they only became -D
-# preprocessor flags and left the options at their defaults, so every build was fetching
-# googletest from GitHub and compiling libCZI's whole test suite and its dynamic library.
-# The googletest download made configure fail whenever GitHub returned a 503.
+# libCZI declares these with option(), so they must be set as cache variables --
+# add_compile_definitions() leaves the options at their defaults.
 set(LIBCZI_BUILD_UNITTESTS OFF CACHE BOOL "" FORCE)
 set(LIBCZI_BUILD_DYNLIB OFF CACHE BOOL "" FORCE)
 set(LIBCZI_BUILD_CZICMD OFF CACHE BOOL "" FORCE)
 
-# Build libCZI's curl-based http/https stream class so CZI files can be read from URLs.
-# These must be cache variables because libCZI declares them with option().
+# curl-based http/https stream class, statically linked against a libCZI-pinned libcurl
 set(LIBCZI_BUILD_CURL_BASED_STREAM ON CACHE BOOL "" FORCE)
-# OFF makes libCZI fetch and statically link a pinned libcurl, keeping wheels self-contained.
 set(LIBCZI_BUILD_PREFER_EXTERNALPACKAGE_LIBCURL OFF CACHE BOOL "" FORCE)
 
 IF (APPLE)
-    # Use Apple's Secure Transport for TLS rather than OpenSSL. curl's CMake picks up a
-    # Homebrew OpenSSL when it can find one, which is not redistributable in a wheel and is
-    # single-architecture, so it breaks the universal2 build. Secure Transport needs no
-    # external dependency and uses the system trust store.
+    # Secure Transport rather than OpenSSL: a Homebrew OpenSSL is neither redistributable
+    # nor universal2, so curl finding one breaks the wheel.
     set(CURL_USE_SECTRANSP ON CACHE BOOL "" FORCE)
     set(CURL_USE_OPENSSL OFF CACHE BOOL "" FORCE)
 ENDIF(APPLE)
 
-# Pin off curl's optional dependencies. They are auto-detected, so without this the wheel
-# picks up whatever happens to be installed on the build machine - libidn2 from Homebrew,
-# for example, which is not redistributable. None are needed to issue range-request GETs.
+# curl's optional dependencies are auto-detected, so pin them off or the wheel picks up
+# whatever the build machine happens to have. None are needed for range-request GETs.
 set(USE_LIBIDN2 OFF CACHE BOOL "" FORCE)
 set(CURL_USE_LIBPSL OFF CACHE BOOL "" FORCE)
 set(CURL_USE_LIBSSH2 OFF CACHE BOOL "" FORCE)

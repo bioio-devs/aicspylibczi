@@ -443,9 +443,7 @@ def test_mosaic_image(data_dir, fname, unscaled_size, expects):
 
 @pytest.mark.parametrize("fname", ["mosaic_test.czi"])
 def test_read_image_region_selects_intersecting_subblocks(data_dir, fname):
-    # mosaic_test.czi is two tiles side by side, overlapping in the middle. A region
-    # inside the left tile only must not pull the right one: skipping a subblock is
-    # what saves a range request when the file is remote.
+    # mosaic_test.czi is two tiles side by side, overlapping in the middle
     czi = CziFile(str(data_dir / fname))
     bbox = czi.get_mosaic_bounding_box()
 
@@ -455,12 +453,11 @@ def test_read_image_region_selects_intersecting_subblocks(data_dir, fname):
     data, shape = czi.read_image(C=0, region=(bbox.x, bbox.y, 64, 64))
     assert dict(shape)["M"] == 1
 
-    # Subblocks are the unit of selection, so the tile comes back whole rather than
-    # cropped to the region.
+    # selection is by subblock, so the tile comes back whole rather than cropped
     assert dict(shape)["Y"] == dict(all_tiles)["Y"]
     assert dict(shape)["X"] == dict(all_tiles)["X"]
 
-    # ...and it is the tile the region actually lands in.
+    # ...and it is the tile the region lands in
     left_tile, _ = czi.read_image(C=0, M=0)
     assert np.array_equal(data, left_tile)
 
@@ -475,8 +472,7 @@ def test_read_image_region_outside_image_raises(data_dir, fname):
 
 @pytest.mark.parametrize("fname", ["mosaic_test.czi"])
 def test_read_image_without_region_is_unchanged(data_dir, fname):
-    # The region argument defaults to None, and adding it must not have moved any
-    # pixels for callers that never pass it.
+    # adding region must not move any pixels for callers that never pass it
     czi = CziFile(str(data_dir / fname))
     data, shape = czi.read_image(C=0)
     assert dict(shape)["M"] == 2

@@ -12,13 +12,7 @@
 
 namespace pb_helpers {
 
-/*!
- * @brief Convert a python value to a libCZI stream property of the requested type.
- * @param value_ the python value
- * @param type_ the type libCZI expects for this property
- * @param name_ the option name, used for error messages
- * @return the typed property
- */
+/// @brief Convert a python value to a libCZI stream property of the requested type.
 inline libCZI::StreamsFactory::Property
 streamPropertyFromPyObject(const pybind11::handle& value_,
                            libCZI::StreamsFactory::Property::Type type_,
@@ -50,15 +44,7 @@ streamPropertyFromPyObject(const pybind11::handle& value_,
   throw std::invalid_argument(msg.str());
 }
 
-/*!
- * @brief Convert a python dict of stream options into a libCZI property bag.
- *
- * Keys may be either the full libCZI property name ("CurlHttp_Timeout") or its suffix
- * ("timeout"), case-insensitively.
- *
- * @param options_ the options dict
- * @return the property bag to hand to libCZI's StreamsFactory
- */
+/// @brief Convert a python dict of stream options into a libCZI property bag.
 inline std::map<int, libCZI::StreamsFactory::Property>
 streamPropertyBagFromDict(const pybind11::dict& options_)
 {

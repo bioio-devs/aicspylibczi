@@ -222,8 +222,7 @@ Reader::getAllSceneYXSize(int scene_index_, bool get_all_matches_)
     if (hasScene) {
       x.first.coordinatePtr()->TryGetPosition(libCZI::DimensionIndex::S, &embeddedSceneIndex);
       if (embeddedSceneIndex == scene_index_) {
-        // Only the logicalRect is wanted, and that comes from the subblock directory -- reading the
-        // subblock itself would fetch a tile's worth of pixels to answer a question about geometry.
+        // the directory has the logicalRect, reading the subblock would fetch the pixels too
         libCZI::SubBlockInfo sbkInfo;
         if (!m_czireader->TryGetSubBlockInfo(x.second, &sbkInfo))
           continue;
@@ -299,9 +298,7 @@ Reader::readSelected(libCZI::CDimCoordinate& plane_coord_,
                                              "Scenes must be read individually "
                                              "for this file, scenes have inconsistent YX shapes!");
   }
-  // A region of {0, 0, -1, -1} (the default) means "no spatial constraint". Anything else is
-  // validated against the file and then handed to getMatches, which drops non-intersecting
-  // subblocks before they are ever read from the stream.
+  // the default region of {0, 0, -1, -1} means no spatial constraint
   bool hasRegion = (region_.w > 0 && region_.h > 0);
   if (hasRegion)
     isValidRegion(region_, m_statistics.boundingBox); // if not throws RegionSelectionException
@@ -310,8 +307,7 @@ Reader::readSelected(libCZI::CDimCoordinate& plane_coord_,
   // SubblockIndexVec is actually a set this is crucial to preserve the image order
   SubblockIndexVec matches = getMatches(subblocksToFind, hasRegion ? &region_ : nullptr);
   if (matches.empty()) {
-    // getMatches only diagnoses bad dimension constraints; an empty set here means the region
-    // itself selected nothing, which it cannot detect.
+    // getMatches faults bad dimension constraints, so getting here means the region selected nothing
     throw RegionSelectionException(region_, m_statistics.boundingBox, "No subblocks intersect the requested region!");
   }
   m_pixelType = matches.begin()->first.pixelType();
@@ -393,8 +389,7 @@ Reader::readSubblockMeta(libCZI::CDimCoordinate& plane_coord_, int index_m_)
 
 // private methods
 
-// Two rectangles intersect only if the overlap has a non-zero area, so tiles that merely touch the
-// region's edge are excluded. This matches how libCZI itself filters a directory by ROI.
+// a zero-area overlap doesn't count, so tiles that only touch the region's edge are excluded
 static bool
 doIntersect(const libCZI::IntRect& a_, const libCZI::IntRect& b_)
 {
@@ -412,18 +407,13 @@ Reader::getMatches(SubblockSortable& match_, const libCZI::IntRect* region_)
   m_czireader->EnumerateSubBlocks([&](int index_, const libCZI::SubBlockInfo& info_) -> bool {
     SubblockSortable subInfo(&(info_.coordinate), info_.mIndex, isMosaic(), info_.pixelType);
     if (isPyramid0(info_) && match_ == subInfo) {
-      // logicalRect comes from the subblock directory, which was parsed when the file was
-      // opened, so rejecting a subblock here costs no I/O.
+      // logicalRect is already in memory from the subblock directory, so this rejection costs no I/O
       if (region_ == nullptr || doIntersect(*region_, info_.logicalRect))
         ans.emplace(std::pair<SubblockSortable, int>(subInfo, index_));
     }
     return true; // Enumerate through every subblock
   });
 
-  // The checks below only fault genuinely invalid dimension constraints, so they stay useful when a
-  // region is in play: a caller who passes both a bad dimension and a region still hears about the
-  // dimension. An empty result that survives them means the region simply selected nothing, which is
-  // the caller's business to interpret.
   if (ans.empty()) {
     // check for invalid Dimension specification
     match_.coordinatePtr()->EnumValidDimensions([&](libCZI::DimensionIndex di_, int value_) {
@@ -547,8 +537,7 @@ Reader::tileBoundingBoxesWith(SubblockSortable& subblocksToFind_)
     throw CDimCoordinatesOverspecifiedException("Tile dimensions overspecified, no matching tiles found.");
 
   auto extractor = [&](const SubblockIndexVec::value_type& match_) {
-    // The rectangle lives in the subblock directory, so ask for the info rather than reading the
-    // subblock: reading it would pull every tile's pixels over the wire for a remote file.
+    // the directory has the logicalRect, reading the subblock would fetch the pixels too
     libCZI::SubBlockInfo sbkInfo;
     if (!m_czireader->TryGetSubBlockInfo(match_.second, &sbkInfo))
       throw ImageAccessUnderspecifiedException(0, 1, "Subblock index not found while reading tile bounding boxes.");

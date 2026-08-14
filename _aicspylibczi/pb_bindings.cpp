@@ -46,13 +46,11 @@ PYBIND11_MODULE(_aicspylibczi, m)
         &pylibczi::streamOptionNames,
         "The libCZI property names accepted as stream options by Reader.from_url.");
 
-  // Every Reader call releases the GIL: any of them may read from the stream, which for a
-  // remote file means blocking on the network. Reader itself never touches the Python API -
-  // that is confined to the pybind11 casters, which run before and after the guard.
+  // Every Reader call may block reading the stream, which for a remote file means the network.
+  // Reader never touches the Python API - that is confined to the casters, which run outside the guard.
   using ReleaseGil = py::call_guard<py::gil_scoped_release>;
 
-  // BBox is registered before Reader because pybind11 converts py::arg default values at .def()
-  // time, and Reader::read_selected takes a default-valued IntRect region.
+  // must be registered before Reader, pybind11 converts py::arg defaults at .def() time
   py::class_<libCZI::IntRect>(m, "BBox")
     .def(py::init<>())
     .def("__eq__",
@@ -84,8 +82,6 @@ PYBIND11_MODULE(_aicspylibczi, m)
     .def("read_dims_string", &pylibczi::Reader::dimsString, ReleaseGil())
     .def("read_dims_sizes", &pylibczi::Reader::dimSizes, ReleaseGil())
     .def("read_meta", &pylibczi::Reader::readMeta, ReleaseGil())
-    // Defaults are spelled out here so existing three-argument calls keep working now that
-    // readSelected takes a region.
     .def("read_selected",
          &pylibczi::Reader::readSelected,
          py::arg("plane_coord"),

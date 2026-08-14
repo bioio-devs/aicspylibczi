@@ -469,8 +469,7 @@ class CziFile(object):
         """
         if not isinstance(file, str):
             return False
-        # Only http/https are checked so that Windows drive letters, ie "C:\\img.czi",
-        # are not mistaken for a URL scheme.
+        # only http/https, so a Windows drive letter is not mistaken for a URL scheme
         return urlparse(file).scheme.lower() in CziFile.REMOTE_SCHEMES
 
     @staticmethod
@@ -573,11 +572,10 @@ class CziFile(object):
         Parameters
         ----------
         region: Tuple
-            The (x, y, width, height) of a sub-region to restrict the read to, in the file's global
-            pixel coordinate frame -- the same frame as read_mosaic's region and as the tile bounding
-            boxes, which for a mosaic file is NOT the tile-local frame. Subblocks that do not
-            intersect it are skipped without being read, so for a file being read over the network
-            their bytes never cross the wire. The default of None reads every matching subblock.
+            The (x, y, width, height) of a sub-region to restrict the read to, in the same global
+            pixel frame as read_mosaic's region and the tile bounding boxes -- for a mosaic file
+            this is NOT the tile-local frame. Subblocks that do not intersect it are skipped
+            without being read. The default of None reads every matching subblock.
         **kwargs
             The keywords below allow you to specify the dimensions that you wish to match. If you
             under-specify the constraints you can easily end up with a massive image stack.
@@ -607,11 +605,9 @@ class CziFile(object):
         packed for a given selection which causes problems when indexing memory. Consequently the M Dimension may
         not match the m_index that is being used in libCZI or displayed in Zeiss' Zen software.
 
-        Subblocks, not pixels, are the unit of region selection. A subblock that merely clips the region is
-        returned whole, at its full size -- the saving is in the subblocks not read at all. A region that
-        excludes some tiles also shortens the M dimension, and since M is repacked densely, position i along M
-        no longer corresponds to m_index i. Use read_all_mosaic_tile_bounding_boxes filtered by the same region
-        to recover which tile is which.
+        Region selection is by subblock and not by pixel, so a subblock that merely clips the region is
+        returned whole. A region that excludes some tiles also shortens M, so use
+        read_all_mosaic_tile_bounding_boxes filtered by the same region to recover which tile is which.
 
         """
         plane_constraints = self._get_coords_from_kwargs(kwargs)
@@ -695,8 +691,7 @@ class CziFile(object):
         """
         Convert an (x, y, width, height) tuple into the BBox the C++ layer expects.
 
-        None means "no spatial constraint" and is encoded as a width and height of -1, which the
-        C++ side resolves to the whole image.
+        None is encoded as a width and height of -1, which the C++ side reads as the whole image.
         """
         bbox = self.czilib.BBox()
         if region is None:

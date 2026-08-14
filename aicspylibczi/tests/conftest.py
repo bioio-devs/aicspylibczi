@@ -17,9 +17,8 @@ def data_dir() -> Path:
 class RangeRequestHandler(BaseHTTPRequestHandler):
     """Serves a directory over http with byte-range support.
 
-    libCZI's curl stream reads via Range requests and rejects any response that
-    delivers more bytes than it asked for, so http.server's stock handler (which
-    ignores Range) cannot be used here.
+    libCZI's curl stream rejects any response that delivers more bytes than it asked
+    for, so http.server's stock handler, which ignores Range, cannot be used here.
     """
 
     protocol_version = "HTTP/1.1"
@@ -83,8 +82,8 @@ def data_server(data_dir):
     handler = partial(RangeRequestHandler, directory=data_dir)
     server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
     server.daemon_threads = True
-    # libCZI keeps its connection alive, so a handler thread is always parked waiting for
-    # the next request. server_close() would join it and never return.
+    # libCZI keeps the connection alive, so a handler thread is always parked waiting for
+    # the next request and server_close() would join it and never return
     server.block_on_close = False
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
