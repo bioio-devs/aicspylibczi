@@ -46,6 +46,9 @@ PYBIND11_MODULE(_aicspylibczi, m)
         &pylibczi::streamOptionNames,
         "The libCZI property names accepted as stream options by Reader.from_url.");
 
+  // Releases the GIL for the duration of the bound C++ call so a slow read
+  // (e.g. an HTTP range request on a remote CZI) doesn't stall other Python
+  // threads. See https://pybind11.readthedocs.io/en/stable/advanced/misc.html#global-interpreter-lock-gil
   using ReleaseGil = py::call_guard<py::gil_scoped_release>;
 
   py::class_<libCZI::IntRect>(m, "BBox")

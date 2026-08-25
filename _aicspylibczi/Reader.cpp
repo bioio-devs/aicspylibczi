@@ -298,8 +298,9 @@ Reader::readSelected(libCZI::CDimCoordinate& plane_coord_,
                                              "for this file, scenes have inconsistent YX shapes!");
   }
   bool hasRegion = (region_.w > 0 && region_.h > 0);
-  if (hasRegion)
+  if (hasRegion) {
     isValidRegion(region_, m_statistics.boundingBox);
+  }
 
   SubblockSortable subblocksToFind(&plane_coord_, index_m_, isMosaic());
   // SubblockIndexVec is actually a set this is crucial to preserve the image order
