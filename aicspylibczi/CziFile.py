@@ -3,7 +3,8 @@
 import io
 import multiprocessing
 from pathlib import Path
-from typing import BinaryIO, Tuple, Union
+from typing import BinaryIO, Dict, Optional, Tuple, Union
+from urllib.parse import urlparse
 
 import numpy as np
 import xml.etree.ElementTree as ET
@@ -11,14 +12,30 @@ import xml.etree.ElementTree as ET
 from . import types
 
 
+def remote_reads_available() -> bool:
+    """
+    Test whether this installation can read CZI files from http/https URLs.
+
+    Returns
+    -------
+    bool
+        True if CziFile accepts http/https URLs.
+
+    """
+    import _aicspylibczi
+
+    return _aicspylibczi.curl_stream_available()
+
+
 class CziFile(object):
     """Zeiss CZI file object.
 
     Args:
-      |  czi_filename (str): Filename of czifile to access.
+      |  czi_filename (str): Filename of czifile to access, or an http/https URL.
 
     Kwargs:
       |  verbose (bool): Print information and times during czi file access.
+      |  stream_options (dict): libCZI stream options, only valid for URLs.
 
     .. note::
 
@@ -48,19 +65,34 @@ class CziFile(object):
     ####
     ZISRAW_DIMS = {"Z", "C", "T", "R", "S", "I", "H", "V", "B"}
 
+    REMOTE_SCHEMES = frozenset({"http", "https"})
+
     def __init__(
         self,
         czi_filename: types.FileLike,
         verbose: bool = False,
+        stream_options: Optional[Dict[str, Union[str, int, bool]]] = None,
     ):
-        # Convert to BytesIO (bytestream)
-        self._bytes = self.convert_to_buffer(czi_filename)
         self.czifile_verbose = verbose
 
         import _aicspylibczi
 
         self.czilib = _aicspylibczi
-        self.reader = self.czilib.Reader(self._bytes)
+
+        if self.is_remote(czi_filename):
+            self._bytes = None
+            self.reader = self.czilib.Reader.from_url(
+                str(czi_filename), stream_options or {}
+            )
+        else:
+            if stream_options:
+                raise ValueError(
+                    "stream_options are only supported for http/https URLs, "
+                    f"received: {czi_filename}"
+                )
+            # Convert to BytesIO (bytestream)
+            self._bytes = self.convert_to_buffer(czi_filename)
+            self.reader = self.czilib.Reader(self._bytes)
 
         self.meta_root = None
 
@@ -417,6 +449,26 @@ class CziFile(object):
         return self.reader.is_mosaic()
 
     @staticmethod
+    def is_remote(file: types.FileLike) -> bool:
+        """
+        Test if the given target is an http/https URL rather than a local file.
+
+        Parameters
+        ----------
+        file
+            The target passed to the constructor.
+
+        Returns
+        -------
+        bool
+            True if the target is an http or https URL.
+
+        """
+        if not isinstance(file, str):
+            return False
+        return urlparse(file).scheme.lower() in CziFile.REMOTE_SCHEMES
+
+    @staticmethod
     def convert_to_buffer(file: types.FileLike) -> Union[BinaryIO, np.ndarray]:
         if isinstance(file, (str, Path)):
             # This will both fully expand and enforce that the filepath exists
@@ -505,7 +557,7 @@ class CziFile(object):
             root.append(new_element)
         return root
 
-    def read_image(self, **kwargs):
+    def read_image(self, region: Tuple = None, **kwargs):
         """
         Read the subblocks in the CZI file and for any subblocks that match all the constraints in kwargs return
         that data. This allows you to select channels/scenes/time-points/Z-slices etc. Note if passed a BGR image
@@ -515,6 +567,8 @@ class CziFile(object):
 
         Parameters
         ----------
+        region: Tuple
+            The (x, y, width, height) of a sub-region to restrict the read.
         **kwargs
             The keywords below allow you to specify the dimensions that you wish to match. If you
             under-specify the constraints you can easily end up with a massive image stack.
@@ -543,13 +597,14 @@ class CziFile(object):
         The M Dimension is a representation of the m_index used inside libCZI. Unfortunately this can be sparsely
         packed for a given selection which causes problems when indexing memory. Consequently the M Dimension may
         not match the m_index that is being used in libCZI or displayed in Zeiss' Zen software.
-
         """
         plane_constraints = self._get_coords_from_kwargs(kwargs)
         m_index = self._get_m_index_from_kwargs(kwargs)
         cores = self._get_cores_from_kwargs(kwargs)
 
-        image, shape = self.reader.read_selected(plane_constraints, m_index, cores)
+        image, shape = self.reader.read_selected(
+            plane_constraints, m_index, cores, self._bbox_from_region(region)
+        )
         return image, shape
 
     def read_mosaic(
@@ -599,18 +654,7 @@ class CziFile(object):
         """
         plane_constraints = self._get_coords_from_kwargs(kwargs)
 
-        if region is None:
-            region = self.czilib.BBox()
-            region.w = -1
-            region.h = -1
-        else:
-            assert len(region) == 4
-            tmp = self.czilib.BBox()
-            tmp.x = region[0]
-            tmp.y = region[1]
-            tmp.w = region[2]
-            tmp.h = region[3]
-            region = tmp
+        region = self._bbox_from_region(region)
 
         if background_color is None:
             background_color = self.czilib.RgbFloat()
@@ -630,6 +674,23 @@ class CziFile(object):
         )
 
         return img
+
+    def _bbox_from_region(self, region: Tuple = None):
+        """
+        Convert an (x, y, width, height) tuple into the BBox the C++ layer expects.
+        """
+        bbox = self.czilib.BBox()
+        if region is None:
+            bbox.w = -1
+            bbox.h = -1
+            return bbox
+
+        assert len(region) == 4
+        bbox.x = region[0]
+        bbox.y = region[1]
+        bbox.w = region[2]
+        bbox.h = region[3]
+        return bbox
 
     def _get_coords_from_kwargs(self, kwargs):
         plane_constraints = self.czilib.DimCoord()

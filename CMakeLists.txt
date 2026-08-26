@@ -32,9 +32,32 @@ ENDIF(WIN32)
 SET(pybind11_DIR ${CMAKE_CURRENT_LIST_DIR}/pybind11)
 
 add_compile_definitions(_LIBCZISTATICLIB)
-add_compile_definitions(LIBCZI_BUILD_UNITTESTS=OFF)
-add_compile_definitions(LIBCZI_BUILD_DYNLIB=OFF)
-add_compile_definitions(LIBCZI_BUILD_CZICMD=OFF)
+
+
+set(LIBCZI_BUILD_UNITTESTS OFF CACHE BOOL "" FORCE)
+set(LIBCZI_BUILD_DYNLIB OFF CACHE BOOL "" FORCE)
+set(LIBCZI_BUILD_CZICMD OFF CACHE BOOL "" FORCE)
+
+# curl-based http/https stream class
+set(LIBCZI_BUILD_CURL_BASED_STREAM ON CACHE BOOL "" FORCE)
+set(LIBCZI_BUILD_PREFER_EXTERNALPACKAGE_LIBCURL OFF CACHE BOOL "" FORCE)
+
+IF (APPLE)
+    # Secure Transport rather than OpenSSL: a Homebrew OpenSSL is neither redistributable
+    # nor universal2, so curl finding one breaks the wheel.
+    set(CURL_USE_SECTRANSP ON CACHE BOOL "" FORCE)
+    set(CURL_USE_OPENSSL OFF CACHE BOOL "" FORCE)
+ENDIF(APPLE)
+
+set(USE_LIBIDN2 OFF CACHE BOOL "" FORCE)
+set(CURL_USE_LIBPSL OFF CACHE BOOL "" FORCE)
+set(CURL_USE_LIBSSH2 OFF CACHE BOOL "" FORCE)
+set(USE_NGHTTP2 OFF CACHE BOOL "" FORCE)
+set(CURL_BROTLI OFF CACHE BOOL "" FORCE)
+set(CURL_ZSTD OFF CACHE BOOL "" FORCE)
+set(CURL_DISABLE_LDAP ON CACHE BOOL "" FORCE)
+set(CURL_DISABLE_LDAPS ON CACHE BOOL "" FORCE)
+
 add_subdirectory(libCZI)
 add_subdirectory(pybind11)
 
@@ -44,16 +67,17 @@ set(PYLIBCZI_C_SRC_HEADERS _aicspylibczi/Reader.h _aicspylibczi/helper_algorithm
         _aicspylibczi/IndexMap.h _aicspylibczi/Image.h _aicspylibczi/TypedImage.h _aicspylibczi/ImageFactory.h
         _aicspylibczi/SourceRange.h _aicspylibczi/TargetRange.h _aicspylibczi/pylibczi_ostream.h
         _aicspylibczi/SubblockMetaVec.h _aicspylibczi/DimIndex.h _aicspylibczi/constants.h
-        _aicspylibczi/StreamImplLockingRead.h _aicspylibczi/Threadpool.h)
+        _aicspylibczi/StreamImplLockingRead.h _aicspylibczi/Threadpool.h _aicspylibczi/UrlStream.h)
 
 set(PYLIBCZI_C_SRC _aicspylibczi/Reader.cpp _aicspylibczi/IndexMap.cpp _aicspylibczi/Image.cpp _aicspylibczi/ImageFactory.cpp
         _aicspylibczi/pylibczi_ostream.cpp _aicspylibczi/exceptions.cpp _aicspylibczi/SubblockSortable.h
         _aicspylibczi/pb_caster_SubblockMetaVec.h _aicspylibczi/constants.cpp _aicspylibczi/DimIndex.cpp
-        _aicspylibczi/StreamImplLockingRead.cpp)
+        _aicspylibczi/StreamImplLockingRead.cpp _aicspylibczi/UrlStream.cpp)
 
 set(PYLIBCZI_PYBIND11 _aicspylibczi/pb_bindings.cpp _aicspylibczi/pb_helpers.h _aicspylibczi/pb_helpers.cpp _aicspylibczi/pb_caster_ImagesContainer.h
         _aicspylibczi/pb_caster_BytesIO.h _aicspylibczi/pb_caster_libCZI_DimensionIndex.h _aicspylibczi/CSimpleStreamImplFromFd.h
-        _aicspylibczi/CSimpleStreamImplFromFd.cpp _aicspylibczi/pb_caster_DimIndex.h)
+        _aicspylibczi/CSimpleStreamImplFromFd.cpp _aicspylibczi/pb_caster_DimIndex.h
+        _aicspylibczi/pb_stream_options.h)
 
 set(TARGET_ONE libczi_c++_extension)
 set(TARGET_TWO _aicspylibczi)

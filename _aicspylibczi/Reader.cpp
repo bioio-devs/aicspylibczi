@@ -222,9 +222,9 @@ Reader::getAllSceneYXSize(int scene_index_, bool get_all_matches_)
     if (hasScene) {
       x.first.coordinatePtr()->TryGetPosition(libCZI::DimensionIndex::S, &embeddedSceneIndex);
       if (embeddedSceneIndex == scene_index_) {
-        int index = x.second;
-        auto subblk = m_czireader->ReadSubBlock(index);
-        auto sbkInfo = subblk->GetSubBlockInfo();
+        libCZI::SubBlockInfo sbkInfo;
+        if (!m_czireader->TryGetSubBlockInfo(x.second, &sbkInfo))
+          continue;
         result.emplace_back(sbkInfo.logicalRect);
         if (!get_all_matches_)
           return result;
@@ -285,7 +285,10 @@ Reader::dimsString()
 }
 
 std::pair<ImagesContainerBase::ImagesContainerBasePtr, std::vector<std::pair<char, size_t>>>
-Reader::readSelected(libCZI::CDimCoordinate& plane_coord_, int index_m_, unsigned int cores_)
+Reader::readSelected(libCZI::CDimCoordinate& plane_coord_,
+                     int index_m_,
+                     unsigned int cores_,
+                     libCZI::IntRect region_)
 {
   int pos;
   if (m_specifyScene && !plane_coord_.TryGetPosition(libCZI::DimensionIndex::S, &pos)) {
@@ -294,9 +297,17 @@ Reader::readSelected(libCZI::CDimCoordinate& plane_coord_, int index_m_, unsigne
                                              "Scenes must be read individually "
                                              "for this file, scenes have inconsistent YX shapes!");
   }
+  bool hasRegion = (region_.w > 0 && region_.h > 0);
+  if (hasRegion) {
+    isValidRegion(region_, m_statistics.boundingBox);
+  }
+
   SubblockSortable subblocksToFind(&plane_coord_, index_m_, isMosaic());
   // SubblockIndexVec is actually a set this is crucial to preserve the image order
-  SubblockIndexVec matches = getMatches(subblocksToFind);
+  SubblockIndexVec matches = getMatches(subblocksToFind, hasRegion ? &region_ : nullptr);
+  if (matches.empty()) {
+    throw RegionSelectionException(region_, m_statistics.boundingBox, "No subblocks intersect the requested region!");
+  }
   m_pixelType = matches.begin()->first.pixelType();
   size_t bgrScaling = ImageFactory::numberOfSamples(m_pixelType);
 
@@ -376,14 +387,25 @@ Reader::readSubblockMeta(libCZI::CDimCoordinate& plane_coord_, int index_m_)
 
 // private methods
 
+static bool
+doIntersect(const libCZI::IntRect& a_, const libCZI::IntRect& b_)
+{
+  int x0 = std::max(a_.x, b_.x);
+  int y0 = std::max(a_.y, b_.y);
+  int x1 = std::min(a_.x + a_.w, b_.x + b_.w);
+  int y1 = std::min(a_.y + a_.h, b_.y + b_.h);
+  return (x1 > x0 && y1 > y0);
+}
+
 Reader::SubblockIndexVec
-Reader::getMatches(SubblockSortable& match_)
+Reader::getMatches(SubblockSortable& match_, const libCZI::IntRect* region_)
 {
   SubblockIndexVec ans;
   m_czireader->EnumerateSubBlocks([&](int index_, const libCZI::SubBlockInfo& info_) -> bool {
     SubblockSortable subInfo(&(info_.coordinate), info_.mIndex, isMosaic(), info_.pixelType);
     if (isPyramid0(info_) && match_ == subInfo) {
-      ans.emplace(std::pair<SubblockSortable, int>(subInfo, index_));
+      if (region_ == nullptr || doIntersect(*region_, info_.logicalRect))
+        ans.emplace(std::pair<SubblockSortable, int>(subInfo, index_));
     }
     return true; // Enumerate through every subblock
   });
@@ -511,8 +533,9 @@ Reader::tileBoundingBoxesWith(SubblockSortable& subblocksToFind_)
     throw CDimCoordinatesOverspecifiedException("Tile dimensions overspecified, no matching tiles found.");
 
   auto extractor = [&](const SubblockIndexVec::value_type& match_) {
-    auto subblk = m_czireader->ReadSubBlock(match_.second);
-    auto sbkInfo = subblk->GetSubBlockInfo();
+    libCZI::SubBlockInfo sbkInfo;
+    if (!m_czireader->TryGetSubBlockInfo(match_.second, &sbkInfo))
+      throw ImageAccessUnderspecifiedException(0, 1, "Subblock index not found while reading tile bounding boxes.");
     return TileBBoxMap::value_type(match_.first, sbkInfo.logicalRect);
   };
 
