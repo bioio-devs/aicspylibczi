@@ -11,6 +11,8 @@ env:
   CIBW_TEST_EXTRAS: test
   # skip python 3.6, 32-bit builds, and PyPy
   CIBW_SKIP: cp36-* cp37-* cp38-* *-win32 *-manylinux_i686 pp*
+  # manylinux2014 is EOL and numpy no longer ships wheels for it
+  CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
 
 name: Python Build Main
 jobs:
