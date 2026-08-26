@@ -52,11 +52,13 @@
 <li class="toctree-l3"><a class="reference internal" href="../../aicspylibczi.html#submodules">Submodules</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../aicspylibczi.html#module-aicspylibczi.CziFile">aicspylibczi.CziFile module</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../aicspylibczi.html#aicspylibczi.CziFile.CziFile"><code class="docutils literal notranslate"><span class="pre">CziFile</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../aicspylibczi.html#aicspylibczi.CziFile.remote_reads_available"><code class="docutils literal notranslate"><span class="pre">remote_reads_available()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../aicspylibczi.html#module-aicspylibczi.types">aicspylibczi.types module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../aicspylibczi.html#module-aicspylibczi">Module contents</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../aicspylibczi.html#aicspylibczi.CziFile"><code class="docutils literal notranslate"><span class="pre">CziFile</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../aicspylibczi.html#aicspylibczi.remote_reads_available"><code class="docutils literal notranslate"><span class="pre">remote_reads_available()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -100,7 +102,8 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">multiprocessing</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">BinaryIO</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">BinaryIO</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">urllib.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">urlparse</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">xml.etree.ElementTree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ET</span>
@@ -108,22 +111,41 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">types</span>
 
 
+<div class="viewcode-block" id="remote_reads_available">
+<a class="viewcode-back" href="../../aicspylibczi.html#aicspylibczi.CziFile.remote_reads_available">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">remote_reads_available</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Test whether this installation can read CZI files from http/https URLs.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">        True if CziFile accepts http/https URLs.</span>
+
+<span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">_aicspylibczi</span>
+
+    <span class="k">return</span> <span class="n">_aicspylibczi</span><span class="o">.</span><span class="n">curl_stream_available</span><span class="p">()</span></div>
+
+
+
 <div class="viewcode-block" id="CziFile">
 <a class="viewcode-back" href="../../aicspylibczi.html#aicspylibczi.CziFile.CziFile">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">CziFile</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Zeiss CZI file object.</span>
+<span class="w">    </span><span class="sd">"""Zeiss CZI file object.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">      |  czi_filename (str): Filename of czifile to access.</span>
+<span class="sd">      |  czi_filename (str): Filename of czifile to access, or an http/https URL.</span>
 
 <span class="sd">    Kwargs:</span>
 <span class="sd">      |  verbose (bool): Print information and times during czi file access.</span>
+<span class="sd">      |  stream_options (dict): libCZI stream options, only valid for URLs.</span>
 
 <span class="sd">    .. note::</span>
 
 <span class="sd">       Utilizes compiled wrapper to libCZI for accessing the CZI file.</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># xxx - likely this is a Zeiss bug,</span>
     <span class="c1">#   units for the scale in the xml file are not correct (says microns, given in meters)</span>
@@ -132,40 +154,55 @@
     <span class="c1"># Dims as defined in libCZI</span>
     <span class="c1">#</span>
     <span class="c1"># Z = 1  # The Z-dimension.</span>
-    <span class="c1"># C = 2  # The C-dimension (&quot;channel&quot;).</span>
-    <span class="c1"># T = 3  # The T-dimension (&quot;time&quot;).</span>
-    <span class="c1"># R = 4  # The R-dimension (&quot;rotation&quot;).</span>
-    <span class="c1"># S = 5  # The S-dimension (&quot;scene&quot;).</span>
-    <span class="c1"># I = 6  # The I-dimension (&quot;illumination&quot;).</span>
-    <span class="c1"># H = 7  # The H-dimension (&quot;phase&quot;).</span>
-    <span class="c1"># V = 8  # The V-dimension (&quot;view&quot;).</span>
+    <span class="c1"># C = 2  # The C-dimension ("channel").</span>
+    <span class="c1"># T = 3  # The T-dimension ("time").</span>
+    <span class="c1"># R = 4  # The R-dimension ("rotation").</span>
+    <span class="c1"># S = 5  # The S-dimension ("scene").</span>
+    <span class="c1"># I = 6  # The I-dimension ("illumination").</span>
+    <span class="c1"># H = 7  # The H-dimension ("phase").</span>
+    <span class="c1"># V = 8  # The V-dimension ("view").</span>
 
     <span class="c1"># aicspylibczi extended dims -- These may be returned but can not be used to request subblocks from the file</span>
-    <span class="c1"># A  # The A-dimension (&quot;samples&quot; - RGB images).</span>
+    <span class="c1"># A  # The A-dimension ("samples" - RGB images).</span>
     <span class="c1"># X  # The X-dimension</span>
     <span class="c1"># Y  # The Y-dimension</span>
     <span class="c1">####</span>
-    <span class="n">ZISRAW_DIMS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Z&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;T&quot;</span><span class="p">,</span> <span class="s2">&quot;R&quot;</span><span class="p">,</span> <span class="s2">&quot;S&quot;</span><span class="p">,</span> <span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="s2">&quot;H&quot;</span><span class="p">,</span> <span class="s2">&quot;V&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">}</span>
+    <span class="n">ZISRAW_DIMS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"Z"</span><span class="p">,</span> <span class="s2">"C"</span><span class="p">,</span> <span class="s2">"T"</span><span class="p">,</span> <span class="s2">"R"</span><span class="p">,</span> <span class="s2">"S"</span><span class="p">,</span> <span class="s2">"I"</span><span class="p">,</span> <span class="s2">"H"</span><span class="p">,</span> <span class="s2">"V"</span><span class="p">,</span> <span class="s2">"B"</span><span class="p">}</span>
+
+    <span class="n">REMOTE_SCHEMES</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">"http"</span><span class="p">,</span> <span class="s2">"https"</span><span class="p">})</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">czi_filename</span><span class="p">:</span> <span class="n">types</span><span class="o">.</span><span class="n">FileLike</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">stream_options</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="c1"># Convert to BytesIO (bytestream)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_bytes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_to_buffer</span><span class="p">(</span><span class="n">czi_filename</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">czifile_verbose</span> <span class="o">=</span> <span class="n">verbose</span>
 
         <span class="kn">import</span><span class="w"> </span><span class="nn">_aicspylibczi</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">czilib</span> <span class="o">=</span> <span class="n">_aicspylibczi</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reader</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">czilib</span><span class="o">.</span><span class="n">Reader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bytes</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_remote</span><span class="p">(</span><span class="n">czi_filename</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bytes</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reader</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">czilib</span><span class="o">.</span><span class="n">Reader</span><span class="o">.</span><span class="n">from_url</span><span class="p">(</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">czi_filename</span><span class="p">),</span> <span class="n">stream_options</span> <span class="ow">or</span> <span class="p">{}</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">stream_options</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">"stream_options are only supported for http/https URLs, "</span>
+                    <span class="sa">f</span><span class="s2">"received: </span><span class="si">{</span><span class="n">czi_filename</span><span class="si">}</span><span class="s2">"</span>
+                <span class="p">)</span>
+            <span class="c1"># Convert to BytesIO (bytestream)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bytes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_to_buffer</span><span class="p">(</span><span class="n">czi_filename</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reader</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">czilib</span><span class="o">.</span><span class="n">Reader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bytes</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">meta_root</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">shape_is_consistent</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Query if the file shape is consistent across scenes.</span>
 
 <span class="sd">        Returns</span>
@@ -173,19 +210,19 @@
 <span class="sd">        bool</span>
 <span class="sd">            true if consistent, false the scenes have different dimension shapes</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">has_consistent_shape</span><span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">dims</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the dimensions present the binary data (not the metadata)</span>
 <span class="sd">        M, Y, X, A are included for completeness but can not be used as constraints.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        str</span>
-<span class="sd">            A string containing Dimensions letters present, ie &quot;BSTZYX&quot;</span>
+<span class="sd">            A string containing Dimensions letters present, ie "BSTZYX"</span>
 
 <span class="sd">        Note</span>
 <span class="sd">        ----</span>
@@ -205,13 +242,13 @@
 <span class="sd">            X - image width</span>
 <span class="sd">            A - samples, BGR/RGB images only</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">read_dims_string</span><span class="p">()</span>
 
 <div class="viewcode-block" id="CziFile.get_dims_shape">
 <a class="viewcode-back" href="../../aicspylibczi.html#aicspylibczi.CziFile.CziFile.get_dims_shape">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_dims_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the dimensions for the opened file from the binary data (not the metadata)</span>
 
 <span class="sd">        Returns</span>
@@ -222,39 +259,39 @@
 <span class="sd">             for each Scene. A consistently shaped file with 3 scenes, 7 time-points</span>
 <span class="sd">            and 4 Z slices containing images of (h,w) = (325, 475) would return</span>
 <span class="sd">            [</span>
-<span class="sd">             {&#39;S&#39;: (0, 3), &#39;T&#39;: (0,7), &#39;X&#39;: (0, 475), &#39;Y&#39;: (0, 325), &#39;Z&#39;: (0, 4)}</span>
+<span class="sd">             {'S': (0, 3), 'T': (0,7), 'X': (0, 475), 'Y': (0, 325), 'Z': (0, 4)}</span>
 <span class="sd">            ].</span>
 <span class="sd">            The result for a similarly shaped file but with different number of time-points per scene would yield</span>
 <span class="sd">            [</span>
-<span class="sd">             {&#39;S&#39;: (0, 1), &#39;T&#39;: (0,8), &#39;X&#39;: (0, 475), &#39;Y&#39;: (0, 325), &#39;Z&#39;: (0, 4)},</span>
-<span class="sd">             {&#39;S&#39;: (1, 2), &#39;T&#39;: (0,6), &#39;X&#39;: (0, 475), &#39;Y&#39;: (0, 325), &#39;Z&#39;: (0, 4)},</span>
-<span class="sd">             {&#39;S&#39;: (2, 3), &#39;T&#39;: (0,7), &#39;X&#39;: (0, 475), &#39;Y&#39;: (0, 325), &#39;Z&#39;: (0, 4)}</span>
+<span class="sd">             {'S': (0, 1), 'T': (0,8), 'X': (0, 475), 'Y': (0, 325), 'Z': (0, 4)},</span>
+<span class="sd">             {'S': (1, 2), 'T': (0,6), 'X': (0, 475), 'Y': (0, 325), 'Z': (0, 4)},</span>
+<span class="sd">             {'S': (2, 3), 'T': (0,7), 'X': (0, 475), 'Y': (0, 325), 'Z': (0, 4)}</span>
 <span class="sd">            ]</span>
 <span class="sd">            For the same initial file but with an RGB pixel type the result would be</span>
 <span class="sd">            [</span>
-<span class="sd">             {&#39;S&#39;: (0, 3), &#39;T&#39;: (0,7), &#39;X&#39;: (0, 475), &#39;Y&#39;: (0, 325), &#39;Z&#39;: (0, 4), &#39;A&#39;: (0,3)}</span>
+<span class="sd">             {'S': (0, 3), 'T': (0,7), 'X': (0, 475), 'Y': (0, 325), 'Z': (0, 4), 'A': (0,3)}</span>
 <span class="sd">            ].</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">read_dims</span><span class="p">()</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">pixel_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        The pixelType of the images. If the pixelType is different in the different subblocks it returns Invalid.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        A string containing the name of the type of each pixel. If inconsistent it returns invalid.</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">pixel_type</span>
 
 <div class="viewcode-block" id="CziFile.get_tile_bounding_box">
 <a class="viewcode-back" href="../../aicspylibczi.html#aicspylibczi.CziFile.CziFile.get_tile_bounding_box">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_tile_bounding_box</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get a single tile (subblock) bounding box (pyramid=0) for the specified dimensions.</span>
 <span class="sd">        For non-mosaic files.</span>
 
@@ -264,13 +301,13 @@
 <span class="sd">            The keywords below allow you to specify the dimensions that you wish to match. If you</span>
 <span class="sd">            under-specify the constraints you can easily end up with a massive image stack.</span>
 <span class="sd">                       Z = 1   # The Z-dimension.</span>
-<span class="sd">                       C = 2   # The C-dimension (&quot;channel&quot;).</span>
-<span class="sd">                       T = 3   # The T-dimension (&quot;time&quot;).</span>
-<span class="sd">                       R = 4   # The R-dimension (&quot;rotation&quot;).</span>
-<span class="sd">                       S = 5   # The S-dimension (&quot;scene&quot;).</span>
-<span class="sd">                       I = 6   # The I-dimension (&quot;illumination&quot;).</span>
-<span class="sd">                       H = 7   # The H-dimension (&quot;phase&quot;).</span>
-<span class="sd">                       V = 8   # The V-dimension (&quot;view&quot;).</span>
+<span class="sd">                       C = 2   # The C-dimension ("channel").</span>
+<span class="sd">                       T = 3   # The T-dimension ("time").</span>
+<span class="sd">                       R = 4   # The R-dimension ("rotation").</span>
+<span class="sd">                       S = 5   # The S-dimension ("scene").</span>
+<span class="sd">                       I = 6   # The I-dimension ("illumination").</span>
+<span class="sd">                       H = 7   # The H-dimension ("phase").</span>
+<span class="sd">                       V = 8   # The V-dimension ("view").</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -281,7 +318,7 @@
 <span class="sd">            bbox.w = The width of the bounding box.</span>
 <span class="sd">            bbox.h = The height of the bounding box.</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">plane_constraints</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_coords_from_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">dims</span><span class="p">,</span> <span class="n">bbox</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">read_tile_bounding_box</span><span class="p">(</span><span class="n">plane_constraints</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">bbox</span></div>
@@ -290,7 +327,7 @@
 <div class="viewcode-block" id="CziFile.get_scene_bounding_box">
 <a class="viewcode-back" href="../../aicspylibczi.html#aicspylibczi.CziFile.CziFile.get_scene_bounding_box">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_scene_bounding_box</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the bounding box (pyramid=0) for the specified scene. For non-mosaic files.</span>
 <span class="sd">        This should be equivalent to the results from get_tile_bounding_box but requiring only one arguments.</span>
 
@@ -308,7 +345,7 @@
 <span class="sd">             bbox.w = The width of the bounding box.</span>
 <span class="sd">             bbox.h = The height of the bounding box.</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">bbox</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">read_scene_bounding_box</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">bbox</span></div>
 
@@ -316,7 +353,7 @@
 <div class="viewcode-block" id="CziFile.get_all_tile_bounding_boxes">
 <a class="viewcode-back" href="../../aicspylibczi.html#aicspylibczi.CziFile.CziFile.get_all_tile_bounding_boxes">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_all_tile_bounding_boxes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get one or more tiles (subblocks) bounding boxes (pyramid=0) for the specified dimensions.</span>
 <span class="sd">        For non-mosaic files.</span>
 
@@ -326,13 +363,13 @@
 <span class="sd">            The keywords below allow you to specify the dimensions that you wish to match. If you</span>
 <span class="sd">            under-specify the constraints you can easily end up with a massive image stack.</span>
 <span class="sd">                       Z = 1   # The Z-dimension.</span>
-<span class="sd">                       C = 2   # The C-dimension (&quot;channel&quot;).</span>
-<span class="sd">                       T = 3   # The T-dimension (&quot;time&quot;).</span>
-<span class="sd">                       R = 4   # The R-dimension (&quot;rotation&quot;).</span>
-<span class="sd">                       S = 5   # The S-dimension (&quot;scene&quot;).</span>
-<span class="sd">                       I = 6   # The I-dimension (&quot;illumination&quot;).</span>
-<span class="sd">                       H = 7   # The H-dimension (&quot;phase&quot;).</span>
-<span class="sd">                       V = 8   # The V-dimension (&quot;view&quot;).</span>
+<span class="sd">                       C = 2   # The C-dimension ("channel").</span>
+<span class="sd">                       T = 3   # The T-dimension ("time").</span>
+<span class="sd">                       R = 4   # The R-dimension ("rotation").</span>
+<span class="sd">                       S = 5   # The S-dimension ("scene").</span>
+<span class="sd">                       I = 6   # The I-dimension ("illumination").</span>
+<span class="sd">                       H = 7   # The H-dimension ("phase").</span>
+<span class="sd">                       V = 8   # The V-dimension ("view").</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -346,7 +383,7 @@
 <span class="sd">                bbox.w = The width of the bounding box.</span>
 <span class="sd">                bbox.h = The height of the bounding box.</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">plane_constraints</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_coords_from_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">read_all_tile_bounding_boxes</span><span class="p">(</span><span class="n">plane_constraints</span><span class="p">)</span></div>
 
@@ -354,7 +391,7 @@
 <div class="viewcode-block" id="CziFile.get_all_scene_bounding_boxes">
 <a class="viewcode-back" href="../../aicspylibczi.html#aicspylibczi.CziFile.CziFile.get_all_scene_bounding_boxes">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_all_scene_bounding_boxes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get one or more tiles (subblocks) bounding boxes (pyramid=0) for the specified dimensions.</span>
 <span class="sd">        For non-mosaic files.</span>
 
@@ -369,14 +406,14 @@
 <span class="sd">                bbox.w = The width of the bounding box.</span>
 <span class="sd">                bbox.h = The height of the bounding box.</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">read_all_scene_bounding_boxes</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="CziFile.get_mosaic_tile_bounding_box">
 <a class="viewcode-back" href="../../aicspylibczi.html#aicspylibczi.CziFile.CziFile.get_mosaic_tile_bounding_box">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_mosaic_tile_bounding_box</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get a single tile (subblock) bounding box (pyramid=0) for the specified dimensions.</span>
 <span class="sd">        For mosaic files.</span>
 
@@ -386,13 +423,13 @@
 <span class="sd">            The keywords below allow you to specify the dimensions that you wish to match. If you</span>
 <span class="sd">            under-specify the constraints you can easily end up with a massive image stack.</span>
 <span class="sd">                       Z = 1   # The Z-dimension.</span>
-<span class="sd">                       C = 2   # The C-dimension (&quot;channel&quot;).</span>
-<span class="sd">                       T = 3   # The T-dimension (&quot;time&quot;).</span>
-<span class="sd">                       R = 4   # The R-dimension (&quot;rotation&quot;).</span>
-<span class="sd">                       S = 5   # The S-dimension (&quot;scene&quot;).</span>
-<span class="sd">                       I = 6   # The I-dimension (&quot;illumination&quot;).</span>
-<span class="sd">                       H = 7   # The H-dimension (&quot;phase&quot;).</span>
-<span class="sd">                       V = 8   # The V-dimension (&quot;view&quot;).</span>
+<span class="sd">                       C = 2   # The C-dimension ("channel").</span>
+<span class="sd">                       T = 3   # The T-dimension ("time").</span>
+<span class="sd">                       R = 4   # The R-dimension ("rotation").</span>
+<span class="sd">                       S = 5   # The S-dimension ("scene").</span>
+<span class="sd">                       I = 6   # The I-dimension ("illumination").</span>
+<span class="sd">                       H = 7   # The H-dimension ("phase").</span>
+<span class="sd">                       V = 8   # The V-dimension ("view").</span>
 <span class="sd">                       M = 10  # The M_index, this is only valid for Mosaic files!</span>
 
 <span class="sd">        Returns</span>
@@ -404,7 +441,7 @@
 <span class="sd">            bbox.w = The width of the bounding box.</span>
 <span class="sd">            bbox.h = The height of the bounding box.</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">plane_constraints</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_coords_from_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">m_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_m_index_from_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">ssorter</span><span class="p">,</span> <span class="n">bbox</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">read_mosaic_tile_bounding_box</span><span class="p">(</span>
@@ -416,7 +453,7 @@
 <div class="viewcode-block" id="CziFile.get_mosaic_scene_bounding_box">
 <a class="viewcode-back" href="../../aicspylibczi.html#aicspylibczi.CziFile.CziFile.get_mosaic_scene_bounding_box">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_mosaic_scene_bounding_box</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the bounding box (pyramid=0) for the specified scene. For mosaic files.</span>
 <span class="sd">        This is not equivalent to the results from get_mosaic_tile_bounding_box.</span>
 
@@ -434,14 +471,14 @@
 <span class="sd">            bbox.w = The width of the bounding box.</span>
 <span class="sd">            bbox.h = The height of the bounding box.</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">read_mosaic_scene_bounding_box</span><span class="p">(</span><span class="n">index</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="CziFile.get_all_mosaic_tile_bounding_boxes">
 <a class="viewcode-back" href="../../aicspylibczi.html#aicspylibczi.CziFile.CziFile.get_all_mosaic_tile_bounding_boxes">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_all_mosaic_tile_bounding_boxes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get one or more tiles (subblocks) bounding boxes (pyramid=0) for the specified dimensions.</span>
 <span class="sd">        For mosaic files.</span>
 
@@ -451,13 +488,13 @@
 <span class="sd">            The keywords below allow you to specify the dimensions that you wish to match. If you</span>
 <span class="sd">            under-specify the constraints you can easily end up with a massive image stack.</span>
 <span class="sd">                       Z = 1   # The Z-dimension.</span>
-<span class="sd">                       C = 2   # The C-dimension (&quot;channel&quot;).</span>
-<span class="sd">                       T = 3   # The T-dimension (&quot;time&quot;).</span>
-<span class="sd">                       R = 4   # The R-dimension (&quot;rotation&quot;).</span>
-<span class="sd">                       S = 5   # The S-dimension (&quot;scene&quot;).</span>
-<span class="sd">                       I = 6   # The I-dimension (&quot;illumination&quot;).</span>
-<span class="sd">                       H = 7   # The H-dimension (&quot;phase&quot;).</span>
-<span class="sd">                       V = 8   # The V-dimension (&quot;view&quot;).</span>
+<span class="sd">                       C = 2   # The C-dimension ("channel").</span>
+<span class="sd">                       T = 3   # The T-dimension ("time").</span>
+<span class="sd">                       R = 4   # The R-dimension ("rotation").</span>
+<span class="sd">                       S = 5   # The S-dimension ("scene").</span>
+<span class="sd">                       I = 6   # The I-dimension ("illumination").</span>
+<span class="sd">                       H = 7   # The H-dimension ("phase").</span>
+<span class="sd">                       V = 8   # The V-dimension ("view").</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -471,7 +508,7 @@
 <span class="sd">                bbox.w = The width of the bounding box.</span>
 <span class="sd">                bbox.h = The height of the bounding box.</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">plane_constraints</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_coords_from_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="c1"># no m_index parameter</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">read_all_mosaic_tile_bounding_boxes</span><span class="p">(</span><span class="n">plane_constraints</span><span class="p">)</span></div>
@@ -480,7 +517,7 @@
 <div class="viewcode-block" id="CziFile.get_all_mosaic_scene_bounding_boxes">
 <a class="viewcode-back" href="../../aicspylibczi.html#aicspylibczi.CziFile.CziFile.get_all_mosaic_scene_bounding_boxes">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_all_mosaic_scene_bounding_boxes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the scene (subblocks) bounding boxes (pyramid=0) for the specified dimensions.</span>
 <span class="sd">        For mosaic files.</span>
 
@@ -495,14 +532,14 @@
 <span class="sd">                bbox.w = The width of the bounding box.</span>
 <span class="sd">                bbox.h = The height of the bounding box.</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">read_all_mosaic_scene_bounding_boxes</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="CziFile.get_mosaic_bounding_box">
 <a class="viewcode-back" href="../../aicspylibczi.html#aicspylibczi.CziFile.CziFile.get_mosaic_bounding_box">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_mosaic_bounding_box</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the bounding box for the entire mosaic image.</span>
 
 <span class="sd">        Returns</span>
@@ -514,13 +551,13 @@
 <span class="sd">            bbox.w = The width of the bounding box.</span>
 <span class="sd">            bbox.h = The height of the bounding box.</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">read_mosaic_bounding_box</span><span class="p">()</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        This returns the Size of each dimension in the dims string. So if S had valid indexes of [0, 1, 2, 3, 4]</span>
 <span class="sd">        the returned tuple would have a value of 5 in the same position as the S occurs in the dims string.</span>
 
@@ -530,13 +567,13 @@
 <span class="sd">            a tuple of dimension sizes. If the data has inconsistent shape the list will only contain -1 values and</span>
 <span class="sd">            the user needs to use dims_shape() to get the indexes.</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">read_dims_sizes</span><span class="p">())</span>
 
 <div class="viewcode-block" id="CziFile.is_mosaic">
 <a class="viewcode-back" href="../../aicspylibczi.html#aicspylibczi.CziFile.CziFile.is_mosaic">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_mosaic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Test if the loaded file is a mosaic file</span>
 
 <span class="sd">        Returns</span>
@@ -544,8 +581,31 @@
 <span class="sd">        bool</span>
 <span class="sd">            True | False ie is this a mosaic file</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">is_mosaic</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="CziFile.is_remote">
+<a class="viewcode-back" href="../../aicspylibczi.html#aicspylibczi.CziFile.CziFile.is_remote">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_remote</span><span class="p">(</span><span class="n">file</span><span class="p">:</span> <span class="n">types</span><span class="o">.</span><span class="n">FileLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Test if the given target is an http/https URL rather than a local file.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        file</span>
+<span class="sd">            The target passed to the constructor.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            True if the target is an http or https URL.</span>
+
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">urlparse</span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="o">.</span><span class="n">scheme</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">CziFile</span><span class="o">.</span><span class="n">REMOTE_SCHEMES</span></div>
 
 
 <div class="viewcode-block" id="CziFile.convert_to_buffer">
@@ -560,7 +620,7 @@
             <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
                 <span class="k">raise</span> <span class="ne">IsADirectoryError</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 
-            <span class="k">return</span> <span class="nb">open</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">open</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="s2">"rb"</span><span class="p">)</span>
 
         <span class="c1"># Convert bytes</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
@@ -573,13 +633,13 @@
         <span class="c1"># Raise</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Reader only accepts types: [str, pathlib.Path, bytes, io.BytesIO, io.IOBase], received: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">"Reader only accepts types: [str, pathlib.Path, bytes, io.BytesIO, io.IOBase], received: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">meta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Extract the metadata block from the czi file.</span>
 
 <span class="sd">        Returns</span>
@@ -587,7 +647,7 @@
 <span class="sd">        xml.etree.ElementTree.Element</span>
 <span class="sd">            The root element of the metadata tree</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta_root</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">meta_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">read_meta</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">meta_root</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">meta_str</span><span class="p">)</span>
@@ -597,7 +657,7 @@
 <div class="viewcode-block" id="CziFile.read_subblock_metadata">
 <a class="viewcode-back" href="../../aicspylibczi.html#aicspylibczi.CziFile.CziFile.read_subblock_metadata">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">read_subblock_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unified_xml</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Read the subblock specific metadata, ie time subblock was acquired / position at acquisition time etc.</span>
 
 <span class="sd">        Parameters</span>
@@ -609,13 +669,13 @@
 <span class="sd">            The keywords below allow you to specify the dimensions that you wish to match. If you</span>
 <span class="sd">            under-specify the constraints you can easily end up with a massive image stack.</span>
 <span class="sd">                       Z = 1   # The Z-dimension.</span>
-<span class="sd">                       C = 2   # The C-dimension (&quot;channel&quot;).</span>
-<span class="sd">                       T = 3   # The T-dimension (&quot;time&quot;).</span>
-<span class="sd">                       R = 4   # The R-dimension (&quot;rotation&quot;).</span>
-<span class="sd">                       S = 5   # The S-dimension (&quot;scene&quot;).</span>
-<span class="sd">                       I = 6   # The I-dimension (&quot;illumination&quot;).</span>
-<span class="sd">                       H = 7   # The H-dimension (&quot;phase&quot;).</span>
-<span class="sd">                       V = 8   # The V-dimension (&quot;view&quot;).</span>
+<span class="sd">                       C = 2   # The C-dimension ("channel").</span>
+<span class="sd">                       T = 3   # The T-dimension ("time").</span>
+<span class="sd">                       R = 4   # The R-dimension ("rotation").</span>
+<span class="sd">                       S = 5   # The S-dimension ("scene").</span>
+<span class="sd">                       I = 6   # The I-dimension ("illumination").</span>
+<span class="sd">                       H = 7   # The H-dimension ("phase").</span>
+<span class="sd">                       V = 8   # The V-dimension ("view").</span>
 <span class="sd">                       M = 10  # The M_index, this is only valid for Mosaic files!</span>
 
 <span class="sd">        Returns</span>
@@ -625,19 +685,19 @@
 <span class="sd">        xml.etree.ElementTree.Element if unified_xml is True</span>
 <span class="sd">            an xml document containing the requested subblock metadata.</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">plane_constraints</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_coords_from_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">m_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_m_index_from_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">subblock_meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">read_meta_from_subblock</span><span class="p">(</span><span class="n">plane_constraints</span><span class="p">,</span> <span class="n">m_index</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">unified_xml</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">subblock_meta</span>
-        <span class="n">root</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="s2">&quot;Subblocks&quot;</span><span class="p">)</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="s2">"Subblocks"</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">subblock_meta</span><span class="p">:</span>
-            <span class="n">new_element</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="s2">&quot;Subblock&quot;</span><span class="p">)</span>
+            <span class="n">new_element</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="s2">"Subblock"</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">dim</span><span class="p">,</span> <span class="n">number</span> <span class="ow">in</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="n">new_element</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">number</span><span class="p">))</span>
-            <span class="k">if</span> <span class="s2">&quot;S&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-                <span class="n">new_element</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;S&quot;</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">"S"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">new_element</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">"S"</span><span class="p">,</span> <span class="s2">"0"</span><span class="p">)</span>
             <span class="n">new_element</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ET</span><span class="o">.</span><span class="n">XML</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
             <span class="n">root</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_element</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">root</span></div>
@@ -645,8 +705,8 @@
 
 <div class="viewcode-block" id="CziFile.read_image">
 <a class="viewcode-back" href="../../aicspylibczi.html#aicspylibczi.CziFile.CziFile.read_image">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">read_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">:</span> <span class="n">Tuple</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Read the subblocks in the CZI file and for any subblocks that match all the constraints in kwargs return</span>
 <span class="sd">        that data. This allows you to select channels/scenes/time-points/Z-slices etc. Note if passed a BGR image</span>
 <span class="sd">        then the dims of the object will returned by this function and the implicit BGR will be expanded into an</span>
@@ -655,17 +715,19 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
+<span class="sd">        region: Tuple</span>
+<span class="sd">            The (x, y, width, height) of a sub-region to restrict the read.</span>
 <span class="sd">        **kwargs</span>
 <span class="sd">            The keywords below allow you to specify the dimensions that you wish to match. If you</span>
 <span class="sd">            under-specify the constraints you can easily end up with a massive image stack.</span>
 <span class="sd">                 Z = 1   # The Z-dimension.</span>
-<span class="sd">                 C = 2   # The C-dimension (&quot;channel&quot;).</span>
-<span class="sd">                 T = 3   # The T-dimension (&quot;time&quot;).</span>
-<span class="sd">                 R = 4   # The R-dimension (&quot;rotation&quot;).</span>
-<span class="sd">                 S = 5   # The S-dimension (&quot;scene&quot;).</span>
-<span class="sd">                 I = 6   # The I-dimension (&quot;illumination&quot;).</span>
-<span class="sd">                 H = 7   # The H-dimension (&quot;phase&quot;).</span>
-<span class="sd">                 V = 8   # The V-dimension (&quot;view&quot;).</span>
+<span class="sd">                 C = 2   # The C-dimension ("channel").</span>
+<span class="sd">                 T = 3   # The T-dimension ("time").</span>
+<span class="sd">                 R = 4   # The R-dimension ("rotation").</span>
+<span class="sd">                 S = 5   # The S-dimension ("scene").</span>
+<span class="sd">                 I = 6   # The I-dimension ("illumination").</span>
+<span class="sd">                 H = 7   # The H-dimension ("phase").</span>
+<span class="sd">                 V = 8   # The V-dimension ("view").</span>
 <span class="sd">                 M = 10  # The M_index, this is only valid for Mosaic files!</span>
 <span class="sd">            Specify the number of cores to use for multithreading with cores.</span>
 <span class="sd">                cores = 3 # use 3 cores for threaded reading of the image.</span>
@@ -675,21 +737,22 @@
 <span class="sd">        (numpy.ndarray, [Dimension, Size])</span>
 <span class="sd">            a tuple of (numpy.ndarray, a list of (Dimension, size)) the second element of the tuple is to make</span>
 <span class="sd">            sure the numpy.ndarray is interpretable. An example of the list is</span>
-<span class="sd">            [(&#39;S&#39;, 1), (&#39;T&#39;, 1), (&#39;C&#39;, 2), (&#39;Z&#39;, 25), (&#39;Y&#39;, 1024), (&#39;X&#39;, 1024)]</span>
+<span class="sd">            [('S', 1), ('T', 1), ('C', 2), ('Z', 25), ('Y', 1024), ('X', 1024)]</span>
 <span class="sd">            so if you probed the numpy.ndarray with .shape you would get (1, 1, 2, 25, 1024, 1024).</span>
 
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
 <span class="sd">        The M Dimension is a representation of the m_index used inside libCZI. Unfortunately this can be sparsely</span>
 <span class="sd">        packed for a given selection which causes problems when indexing memory. Consequently the M Dimension may</span>
-<span class="sd">        not match the m_index that is being used in libCZI or displayed in Zeiss&#39; Zen software.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        not match the m_index that is being used in libCZI or displayed in Zeiss' Zen software.</span>
+<span class="sd">        """</span>
         <span class="n">plane_constraints</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_coords_from_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">m_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_m_index_from_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">cores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_cores_from_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
-        <span class="n">image</span><span class="p">,</span> <span class="n">shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">read_selected</span><span class="p">(</span><span class="n">plane_constraints</span><span class="p">,</span> <span class="n">m_index</span><span class="p">,</span> <span class="n">cores</span><span class="p">)</span>
+        <span class="n">image</span><span class="p">,</span> <span class="n">shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">read_selected</span><span class="p">(</span>
+            <span class="n">plane_constraints</span><span class="p">,</span> <span class="n">m_index</span><span class="p">,</span> <span class="n">cores</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bbox_from_region</span><span class="p">(</span><span class="n">region</span><span class="p">)</span>
+        <span class="p">)</span>
         <span class="k">return</span> <span class="n">image</span><span class="p">,</span> <span class="n">shape</span></div>
 
 
@@ -702,7 +765,7 @@
         <span class="n">background_color</span><span class="p">:</span> <span class="n">Tuple</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Reads a mosaic file and returns an image corresponding to the specified dimensions. If the file is more than</span>
 <span class="sd">        a 2D sheet of pixels, meaning only one channel, z-slice, time-index, etc then the kwargs must specify the</span>
 <span class="sd">        dimension with more than one possible value.</span>
@@ -718,7 +781,7 @@
 <span class="sd">            A bounding box specifying the extraction box (x0, y0, width, height) specified in pixels</span>
 <span class="sd">        scale_factor</span>
 <span class="sd">            The amount to scale the data by, 0.1 would mean an image 1/10 the height and width of native, if you</span>
-<span class="sd">            get distortions it seems to be due to a bug in Zeiss&#39;s libCZI I&#39;m trying to track it down but for now</span>
+<span class="sd">            get distortions it seems to be due to a bug in Zeiss's libCZI I'm trying to track it down but for now</span>
 <span class="sd">            if you use scale_factor=1.0 it should work properly.</span>
 <span class="sd">        background_color</span>
 <span class="sd">            Background color used when pixel is outside of a sublock. If omitted, it defaults to black</span>
@@ -727,33 +790,22 @@
 <span class="sd">            The keywords below allow you to specify the dimension plane that constrains the 2D data. If the</span>
 <span class="sd">            constraints are underspecified the function will fail. ::</span>
 <span class="sd">                    Z = 1   # The Z-dimension.</span>
-<span class="sd">                    C = 2   # The C-dimension (&quot;channel&quot;).</span>
-<span class="sd">                    T = 3   # The T-dimension (&quot;time&quot;).</span>
-<span class="sd">                    R = 4   # The R-dimension (&quot;rotation&quot;).</span>
-<span class="sd">                    S = 5   # The S-dimension (&quot;scene&quot;).</span>
-<span class="sd">                    I = 6   # The I-dimension (&quot;illumination&quot;).</span>
-<span class="sd">                    H = 7   # The H-dimension (&quot;phase&quot;).</span>
-<span class="sd">                    V = 8   # The V-dimension (&quot;view&quot;).</span>
+<span class="sd">                    C = 2   # The C-dimension ("channel").</span>
+<span class="sd">                    T = 3   # The T-dimension ("time").</span>
+<span class="sd">                    R = 4   # The R-dimension ("rotation").</span>
+<span class="sd">                    S = 5   # The S-dimension ("scene").</span>
+<span class="sd">                    I = 6   # The I-dimension ("illumination").</span>
+<span class="sd">                    H = 7   # The H-dimension ("phase").</span>
+<span class="sd">                    V = 8   # The V-dimension ("view").</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        numpy.ndarray</span>
 <span class="sd">            (1, height, width)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">plane_constraints</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_coords_from_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">region</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">region</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">czilib</span><span class="o">.</span><span class="n">BBox</span><span class="p">()</span>
-            <span class="n">region</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
-            <span class="n">region</span><span class="o">.</span><span class="n">h</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">region</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span>
-            <span class="n">tmp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">czilib</span><span class="o">.</span><span class="n">BBox</span><span class="p">()</span>
-            <span class="n">tmp</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">region</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">tmp</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">region</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-            <span class="n">tmp</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="n">region</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-            <span class="n">tmp</span><span class="o">.</span><span class="n">h</span> <span class="o">=</span> <span class="n">region</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
-            <span class="n">region</span> <span class="o">=</span> <span class="n">tmp</span>
+        <span class="n">region</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bbox_from_region</span><span class="p">(</span><span class="n">region</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">background_color</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">background_color</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">czilib</span><span class="o">.</span><span class="n">RgbFloat</span><span class="p">()</span>
@@ -775,6 +827,23 @@
         <span class="k">return</span> <span class="n">img</span></div>
 
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_bbox_from_region</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">:</span> <span class="n">Tuple</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Convert an (x, y, width, height) tuple into the BBox the C++ layer expects.</span>
+<span class="sd">        """</span>
+        <span class="n">bbox</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">czilib</span><span class="o">.</span><span class="n">BBox</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">region</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">bbox</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="n">bbox</span><span class="o">.</span><span class="n">h</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="k">return</span> <span class="n">bbox</span>
+
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">region</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span>
+        <span class="n">bbox</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">region</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">bbox</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">region</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">bbox</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="n">region</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">bbox</span><span class="o">.</span><span class="n">h</span> <span class="o">=</span> <span class="n">region</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">bbox</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_coords_from_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
         <span class="n">plane_constraints</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">czilib</span><span class="o">.</span><span class="n">DimCoord</span><span class="p">()</span>
         <span class="p">[</span>
@@ -786,19 +855,19 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_m_index_from_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
         <span class="n">m_index</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
-        <span class="k">if</span> <span class="s2">&quot;M&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">"M"</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_mosaic</span><span class="p">():</span>
                 <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">czilib</span><span class="o">.</span><span class="n">PylibCZI_CDimCoordinatesOverspecifiedException</span><span class="p">(</span>
-                    <span class="s2">&quot;M Dimension is specified but the file is not a mosaic file!&quot;</span>
+                    <span class="s2">"M Dimension is specified but the file is not a mosaic file!"</span>
                 <span class="p">)</span>
-            <span class="n">m_index</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;M&quot;</span><span class="p">)</span>
+            <span class="n">m_index</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"M"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">m_index</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_cores_from_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">cores</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span>
-        <span class="k">if</span> <span class="s2">&quot;cores&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-            <span class="n">cores</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cores&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">"cores"</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">cores</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"cores"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">cores</span></div>
 
 </pre></div>

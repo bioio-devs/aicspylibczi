@@ -54,11 +54,13 @@
 <li class="toctree-l3"><a class="reference internal" href="aicspylibczi.html#submodules">Submodules</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aicspylibczi.html#module-aicspylibczi.CziFile">aicspylibczi.CziFile module</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="aicspylibczi.html#aicspylibczi.CziFile.CziFile"><code class="docutils literal notranslate"><span class="pre">CziFile</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="aicspylibczi.html#aicspylibczi.CziFile.remote_reads_available"><code class="docutils literal notranslate"><span class="pre">remote_reads_available()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="aicspylibczi.html#module-aicspylibczi.types">aicspylibczi.types module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aicspylibczi.html#module-aicspylibczi">Module contents</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="aicspylibczi.html#aicspylibczi.CziFile"><code class="docutils literal notranslate"><span class="pre">CziFile</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="aicspylibczi.html#aicspylibczi.remote_reads_available"><code class="docutils literal notranslate"><span class="pre">remote_reads_available()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -119,11 +121,11 @@ CZI files and meta-data. We only support 64bit architectures currently if you de
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 
-<span class="n">pth</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;20190610_S02-02.czi&#39;</span><span class="p">)</span>
+<span class="n">pth</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">'20190610_S02-02.czi'</span><span class="p">)</span>
 <span class="n">czi</span> <span class="o">=</span> <span class="n">CziFile</span><span class="p">(</span><span class="n">pth</span><span class="p">)</span>
 
 <span class="c1"># Get the shape of the data, the coordinate pairs are (start index, size)</span>
-<span class="n">dimensions</span> <span class="o">=</span> <span class="n">czi</span><span class="o">.</span><span class="n">get_dims_shape</span><span class="p">()</span>  <span class="c1"># [{&#39;X&#39;: (0, 1900), &#39;Y&#39;: (0, 1300), &#39;Z&#39;: (0, 60), &#39;C&#39;: (0, 4), &#39;S&#39;: (0, 40), &#39;B&#39;: (0, 1)}]</span>
+<span class="n">dimensions</span> <span class="o">=</span> <span class="n">czi</span><span class="o">.</span><span class="n">get_dims_shape</span><span class="p">()</span>  <span class="c1"># [{'X': (0, 1900), 'Y': (0, 1300), 'Z': (0, 60), 'C': (0, 4), 'S': (0, 40), 'B': (0, 1)}]</span>
 
 <span class="n">czi</span><span class="o">.</span><span class="n">dims</span>  <span class="c1"># BSCZYX</span>
 
@@ -133,7 +135,7 @@ CZI files and meta-data. We only support 64bit architectures currently if you de
 <span class="n">img</span><span class="p">,</span> <span class="n">shp</span> <span class="o">=</span> <span class="n">czi</span><span class="o">.</span><span class="n">read_image</span><span class="p">(</span><span class="n">S</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">Z</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
 
 
-<span class="c1"># shp = [(&#39;B&#39;, 1), (&#39;S&#39;, 1), (&#39;C&#39;, 4), (&#39;Z&#39;, 1), (&#39;Y&#39;, 1300), (&#39;X&#39;, 1900)]  # List[(Dimension, size), ...]</span>
+<span class="c1"># shp = [('B', 1), ('S', 1), ('C', 4), ('Z', 1), ('Y', 1300), ('X', 1900)]  # List[(Dimension, size), ...]</span>
 <span class="c1"># img.shape = (1, 1, 4, 1, 1300, 1900)   # numpy.ndarray</span>
 
 <span class="c1"># define helper functions</span>
@@ -163,7 +165,7 @@ CZI files and meta-data. We only support 64bit architectures currently if you de
 <span class="c1"># plot using matplotlib¶</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">cmy</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">'off'</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><img alt="Cardio Image" src="images/cardio.png" /></p>
@@ -175,15 +177,15 @@ CZI files and meta-data. We only support 64bit architectures currently if you de
 <span class="kn">import</span><span class="w"> </span><span class="nn">pathlib</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
 
-<span class="n">mosaic_file</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="s1">&#39;mosaic_test.czi&#39;</span><span class="p">)</span>
+<span class="n">mosaic_file</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="s1">'mosaic_test.czi'</span><span class="p">)</span>
 <span class="n">czi</span> <span class="o">=</span> <span class="n">aicspylibczi</span><span class="o">.</span><span class="n">CziFile</span><span class="p">(</span><span class="n">mosaic_file</span><span class="p">)</span>
 
 <span class="c1"># Get the shape of the data</span>
-<span class="n">dimensions</span> <span class="o">=</span> <span class="n">czi</span><span class="o">.</span><span class="n">dims</span>  <span class="c1"># &#39;STCZMYX&#39;</span>
+<span class="n">dimensions</span> <span class="o">=</span> <span class="n">czi</span><span class="o">.</span><span class="n">dims</span>  <span class="c1"># 'STCZMYX'</span>
 
 <span class="n">czi</span><span class="o">.</span><span class="n">size</span>  <span class="c1"># (1, 1, 1, 1, 2, 624, 924)</span>
 
-<span class="n">czi</span><span class="o">.</span><span class="n">get_dims_shape</span><span class="p">()</span>  <span class="c1"># [{&#39;X&#39;: (0, 924), &#39;Y&#39;: (0, 624), &#39;Z&#39;: (0, 1), &#39;C&#39;: (0, 1), &#39;T&#39;: (0, 1), &#39;M&#39;: (0, 2), &#39;S&#39;: (0, 1)}]</span>
+<span class="n">czi</span><span class="o">.</span><span class="n">get_dims_shape</span><span class="p">()</span>  <span class="c1"># [{'X': (0, 924), 'Y': (0, 624), 'Z': (0, 1), 'C': (0, 1), 'T': (0, 1), 'M': (0, 2), 'S': (0, 1)}]</span>
 
 <span class="n">czi</span><span class="o">.</span><span class="n">is_mosaic</span><span class="p">()</span>  <span class="c1"># True</span>
 <span class="c1"># Mosaic files ignore the S dimension and use an internal mIndex to reconstruct, the scale factor allows one to generate a manageable image</span>
@@ -197,6 +199,53 @@ CZI files and meta-data. We only support 64bit architectures currently if you de
 </pre></div>
 </div>
 <p><img alt="Mosaic Image" src="images/mosaic.png" /></p>
+</section>
+<section id="example-3-read-a-czi-from-a-remote-url">
+<h4>Example 3: Read a czi from a remote URL<a class="headerlink" href="#example-3-read-a-czi-from-a-remote-url" title="Link to this heading"></a></h4>
+<p><code class="docutils literal notranslate"><span class="pre">CziFile</span></code> accepts <code class="docutils literal notranslate"><span class="pre">http</span></code> and <code class="docutils literal notranslate"><span class="pre">https</span></code> URLs in place of a path. Reads are served by libCZI’s
+libcurl-backed stream, which fetches only the byte ranges it needs rather than downloading
+the whole file, so tile and plane access stays cheap on large remote images.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aicspylibczi</span><span class="w"> </span><span class="kn">import</span> <span class="n">CziFile</span>
+
+<span class="n">czi</span> <span class="o">=</span> <span class="n">CziFile</span><span class="p">(</span><span class="s2">"https://example.com/data/mosaic_file.czi"</span><span class="p">)</span>
+
+<span class="n">czi</span><span class="o">.</span><span class="n">dims</span>  <span class="c1"># 'BSCZYX'</span>
+<span class="n">img</span><span class="p">,</span> <span class="n">shp</span> <span class="o">=</span> <span class="n">czi</span><span class="o">.</span><span class="n">read_image</span><span class="p">(</span><span class="n">S</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The server must support HTTP range requests. If it does not, libCZI cannot read the file.</p>
+<p>Pass <code class="docutils literal notranslate"><span class="pre">stream_options</span></code> to configure the underlying curl stream, for example to set a timeout
+or send a bearer token to an authenticated endpoint:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">czi</span> <span class="o">=</span> <span class="n">CziFile</span><span class="p">(</span>
+    <span class="s2">"https://example.com/data/image.czi"</span><span class="p">,</span>
+    <span class="n">stream_options</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">"timeout"</span><span class="p">:</span> <span class="mi">60</span><span class="p">,</span>             <span class="c1"># seconds for the whole transfer</span>
+        <span class="s2">"connect_timeout"</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>     <span class="c1"># seconds for the connection phase</span>
+        <span class="s2">"xoauth2_bearer"</span><span class="p">:</span> <span class="n">token</span><span class="p">,</span>   <span class="c1"># OAuth2 access token</span>
+    <span class="p">},</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Option names are libCZI’s stream properties. Both the full name (<code class="docutils literal notranslate"><span class="pre">CurlHttp_Timeout</span></code>) and its
+short form (<code class="docutils literal notranslate"><span class="pre">timeout</span></code>) are accepted, case- and underscore-insensitively. The full set for your
+installation is available programmatically:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">_aicspylibczi</span>
+
+<span class="n">_aicspylibczi</span><span class="o">.</span><span class="n">stream_option_names</span><span class="p">()</span>
+<span class="c1"># ['CurlHttp_Proxy', 'CurlHttp_UserAgent', 'CurlHttp_Timeout', 'CurlHttp_ConnectTimeout',</span>
+<span class="c1">#  'CurlHttp_Xoauth2Bearer', 'CurlHttp_Cookie', 'CurlHttp_SslVerifyPeer', 'CurlHttp_SslVerifyHost',</span>
+<span class="c1">#  'CurlHttp_FollowLocation', 'CurlHttp_MaxRedirs', 'CurlHttp_CaInfo', 'CurlHttp_CaInfoBlob']</span>
+</pre></div>
+</div>
+<p>Remote reads depend on a build-time option, so a build made without the curl stream will
+reject URLs. Check before relying on it:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">aicspylibczi</span><span class="w"> </span><span class="kn">import</span> <span class="n">remote_reads_available</span>
+
+<span class="n">remote_reads_available</span><span class="p">()</span>  <span class="c1"># True for the published wheels</span>
+</pre></div>
+</div>
+<p>Object stores that issue presigned URLs (S3, GCS, Azure Blob) work through the same path,
+since a presigned URL is just an authenticated https URL.</p>
 </section>
 </section>
 <section id="installation">
@@ -226,6 +275,10 @@ This will install the aicspylibczi python module and extension binaries (<a clas
 <ul>
 <li><p>libCZI requires a c++11 compatible compiler. Built &amp; Tested with clang.</p></li>
 <li><p>Development requirements are those required for libCZI: <strong>libpng</strong>, <strong>zlib</strong></p></li>
+<li><p>libcurl is fetched and built automatically to support remote reads. On Linux it needs a TLS
+backend present at build time (<strong>openssl-devel</strong> / <strong>libssl-dev</strong>) or <code class="docutils literal notranslate"><span class="pre">https</span></code> URLs will not
+work. macOS uses Secure Transport and Windows uses SChannel, neither of which needs anything
+installed.</p></li>
 <li><p>Install the package:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">.</span>
 <span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span><span class="p">[</span><span class="n">dev</span><span class="p">]</span> <span class="c1"># for development (-e means editable so changes take effect when made)</span>
@@ -239,7 +292,7 @@ This will install the aicspylibczi python module and extension binaries (<a clas
 <li><p>Note: If you get the message directly below on windows you need to set PYTHONHOME to be the folder the python.exe you are compiling against lives in.</p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">EXEC</span> <span class="p">:</span> <span class="n">Fatal</span> <span class="n">Python</span> <span class="n">error</span> <span class="p">:</span> <span class="n">initfsencoding</span><span class="p">:</span> <span class="n">unable</span> <span class="n">to</span> <span class="n">load</span> <span class="n">the</span> <span class="n">file</span> <span class="n">system</span> <span class="n">codec</span> <span class="o">...</span>
-<span class="ne">ModuleNotFoundError</span><span class="p">:</span> <span class="n">No</span> <span class="n">module</span> <span class="n">named</span> <span class="s1">&#39;encodings&#39;</span>
+<span class="ne">ModuleNotFoundError</span><span class="p">:</span> <span class="n">No</span> <span class="n">module</span> <span class="n">named</span> <span class="s1">'encodings'</span>
 </pre></div>
 </div>
 </section>
