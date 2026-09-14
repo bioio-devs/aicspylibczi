@@ -2,6 +2,8 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cstdlib>
+#include <fstream>
 #include <sstream>
 #include <stdexcept>
 
@@ -22,6 +24,38 @@ squash(const std::string& str_)
     }
   }
   return out;
+}
+
+#if defined(__linux__)
+/// Where distributions keep the system CA bundle. The libcurl bundled into the Linux wheel
+/// defaults to the path from its build container, which need not exist on the running machine.
+const char* const kCaBundlePaths[] = {
+  "/etc/ssl/certs/ca-certificates.crt", // Debian, Ubuntu, Alpine
+  "/etc/pki/tls/certs/ca-bundle.crt",   // RHEL, Fedora
+  "/etc/ssl/ca-bundle.pem",             // SUSE
+  "/etc/ssl/cert.pem",                  // Alpine, BSD
+};
+#endif
+
+/// The CA bundle to verify https servers with when the caller did not name one, or "" to leave
+/// libcurl's default in place. macOS and Windows verify through the OS certificate store.
+std::string
+defaultCaBundle()
+{
+#if defined(__linux__)
+  for (const char* var : { "SSL_CERT_FILE", "CURL_CA_BUNDLE" }) {
+    const char* value = std::getenv(var);
+    if (value != nullptr && *value != '\0') {
+      return value;
+    }
+  }
+  for (const char* path : kCaBundlePaths) {
+    if (std::ifstream(path).good()) {
+      return path;
+    }
+  }
+#endif
+  return "";
 }
 
 }
@@ -87,6 +121,15 @@ createStreamFromUrl(const std::string& url_, const std::map<int, libCZI::Streams
   libCZI::StreamsFactory::CreateStreamInfo streamInfo;
   streamInfo.class_name = kCurlHttpStreamClass;
   streamInfo.property_bag = property_bag_;
+
+  using Props = libCZI::StreamsFactory::StreamProperties;
+  if (streamInfo.property_bag.count(Props::kCurlHttp_CaInfo) == 0 &&
+      streamInfo.property_bag.count(Props::kCurlHttp_CaInfoBlob) == 0) {
+    const std::string bundle = defaultCaBundle();
+    if (!bundle.empty()) {
+      streamInfo.property_bag.emplace(Props::kCurlHttp_CaInfo, libCZI::StreamsFactory::Property(bundle));
+    }
+  }
 
   auto stream = libCZI::StreamsFactory::CreateStream(streamInfo, url_);
   if (!stream) {

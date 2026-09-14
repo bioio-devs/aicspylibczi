@@ -119,6 +119,26 @@ jobs:
           name: build-wheels-${{ matrix.cibw-arch }}
           path: wheelhouse/*.whl
 
+  test_linux_wheel:
+    # cibuildwheel tests inside the manylinux container, whose CA bundle path the bundled
+    # libcurl was built against. Only a wheel installed on a different distribution proves
+    # https reads find the CA bundle at runtime.
+    name: Linux wheel reads https
+    needs: [build_wheels]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-wheels-manylinux_x86_64
+          path: wheelhouse
+      - run: |
+          pip install pytest wheelhouse/aicspylibczi-*-cp312-*.whl
+          pytest aicspylibczi/tests -k test_https_read
+
   upload_all:
     name: Upload if release
     needs: [build_wheels, build_sdist]
