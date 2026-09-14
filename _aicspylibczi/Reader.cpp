@@ -371,7 +371,12 @@ Reader::readSubblockMeta(libCZI::CDimCoordinate& plane_coord_, int index_m_, lib
   SubblockMetaVec metaSubblocks;
   metaSubblocks.setMosaic(isMosaic());
 
-  bool hasRegion = (region_.w > 0 && region_.h > 0);
+  // {0, 0, -1, -1} is the sentinel for region=None; anything else the caller asked for must be valid,
+  // otherwise a degenerate region would silently drop the filter and return every subblock.
+  bool hasRegion = !(region_.w == -1 && region_.h == -1);
+  if (hasRegion) {
+    isValidRegion(region_, m_statistics.boundingBox); // if not throws RegionSelectionException
+  }
   SubblockSortable subBlockToFind(&plane_coord_, index_m_, isMosaic());
   SubblockIndexVec matches = getMatches(subBlockToFind, hasRegion ? &region_ : nullptr);
 
@@ -490,8 +495,14 @@ Reader::readMosaic(libCZI::CDimCoordinate plane_coord_,
   libCZI::ISingleChannelScalingTileAccessor::Options options;
   options.Clear();
   options.backGroundColor = backGroundColor_;
-  if (scene_index_ >= 0)
+  if (scene_index_ >= 0) {
+    // An unknown scene would composite nothing and return a pure-background image; a file with
+    // no explicit scenes (empty sceneBoundingBoxes) can never match a scene filter either.
+    if (m_statistics.sceneBoundingBoxes.find(scene_index_) == m_statistics.sceneBoundingBoxes.end())
+      throw SceneIndexException(
+        scene_index_, m_statistics.sceneBoundingBoxes.begin(), m_statistics.sceneBoundingBoxes.end());
     options.sceneFilter = libCZI::Utils::IndexSetFromString(std::to_wstring(scene_index_));
+  }
 
   // multiTile accessor is not compatible with S, it composites the Scenes and the mIndexs together
   auto multiTileComposite = accessor->Get(im_box_, &plane_coord_, scale_factor_, &options);
