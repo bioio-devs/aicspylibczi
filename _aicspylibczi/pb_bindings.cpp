@@ -62,12 +62,6 @@ PYBIND11_MODULE(_aicspylibczi, m)
     .def_readwrite("w", &libCZI::IntRect::w)
     .def_readwrite("h", &libCZI::IntRect::h);
 
-  py::class_<libCZI::RgbFloatColor>(m, "RgbFloat")
-    .def(py::init<>())
-    .def_readwrite("r", &libCZI::RgbFloatColor::r)
-    .def_readwrite("g", &libCZI::RgbFloatColor::g)
-    .def_readwrite("b", &libCZI::RgbFloatColor::b);
-
   py::class_<pylibczi::Reader>(m, "Reader")
     .def(py::init<std::shared_ptr<libCZI::IStream>>(), ReleaseGil())
     .def_static(
@@ -128,6 +122,12 @@ PYBIND11_MODULE(_aicspylibczi, m)
     .def("m_index", &pylibczi::IndexMap::mIndex);
 
   py::class_<libCZI::CDimCoordinate>(m, "DimCoord").def(py::init<>()).def("set_dim", &libCZI::CDimCoordinate::Set);
+
+  py::class_<libCZI::RgbFloatColor>(m, "RgbFloat")
+    .def(py::init<>())
+    .def_readwrite("r", &libCZI::RgbFloatColor::r)
+    .def_readwrite("g", &libCZI::RgbFloatColor::g)
+    .def_readwrite("b", &libCZI::RgbFloatColor::b);
 
   py::class_<pylibczi::SubblockSortable>(m, "TileInfo")
     //   .def(py::init<pylibczi::SubblockSortable>())
