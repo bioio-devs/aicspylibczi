@@ -222,13 +222,10 @@ public:
    * @brief provide the subblock metadata in index order consistent with readSelected.
    * @param plane_coord_ A structure containing the Dimension constraints
    * @param index_m_ Is only relevant for mosaic files, if you wish to select one frame.
-   * @param region_ An optional spatial filter (x, y, w, h). Only subblocks whose logical rect
-   *        intersects region_ are returned. Set w=-1 (default) to disable.
+   * @param cores_ The number of cores to use to process threads
    * @return a vector of metadata string blocks
    */
-  SubblockMetaVec readSubblockMeta(libCZI::CDimCoordinate& plane_coord_,
-                                   int index_m_ = -1,
-                                   libCZI::IntRect region_ = { 0, 0, -1, -1 });
+  SubblockMetaVec readSubblockMeta(libCZI::CDimCoordinate& plane_coord_, int index_m_ = -1);
 
   /*!
    * @brief If the czi file is a mosaic tiled image this function can be used to reconstruct it into an image.
@@ -259,8 +256,7 @@ public:
   ImagesContainerBase::ImagesContainerBasePtr readMosaic(libCZI::CDimCoordinate plane_coord_,
                                                          float scale_factor_ = 1.0,
                                                          libCZI::IntRect im_box_ = { 0, 0, -1, -1 },
-                                                         libCZI::RgbFloatColor backGroundColor_ = { 0.0, 0.0, 0.0 },
-                                                         int scene_index_ = -1);
+                                                         libCZI::RgbFloatColor backGroundColor_ = { 0.0, 0.0, 0.0 });
 
   /*!
    * Convert the libCZI::DimensionIndex to a character

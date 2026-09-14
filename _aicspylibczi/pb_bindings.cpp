@@ -89,20 +89,8 @@ PYBIND11_MODULE(_aicspylibczi, m)
          py::arg("cores") = 3,
          py::arg("region") = libCZI::IntRect{ 0, 0, -1, -1 },
          ReleaseGil())
-    .def("read_meta_from_subblock",
-         &pylibczi::Reader::readSubblockMeta,
-         py::arg("plane_coord"),
-         py::arg("index_m") = -1,
-         py::arg("region") = libCZI::IntRect{ 0, 0, -1, -1 },
-         ReleaseGil())
-    .def("read_mosaic",
-         &pylibczi::Reader::readMosaic,
-         py::arg("plane_coord"),
-         py::arg("scale_factor") = 1.0f,
-         py::arg("region") = libCZI::IntRect{ 0, 0, -1, -1 },
-         py::arg("background_color") = libCZI::RgbFloatColor{ 0.0f, 0.0f, 0.0f },
-         py::arg("scene_index") = -1,
-         ReleaseGil())
+    .def("read_meta_from_subblock", &pylibczi::Reader::readSubblockMeta, ReleaseGil())
+    .def("read_mosaic", &pylibczi::Reader::readMosaic, ReleaseGil())
     .def("read_tile_bounding_box", &pylibczi::Reader::tileBoundingBox, ReleaseGil())
     .def("read_scene_bounding_box", &pylibczi::Reader::sceneBoundingBox, ReleaseGil())
     .def("read_all_tile_bounding_boxes", &pylibczi::Reader::tileBoundingBoxes, ReleaseGil())

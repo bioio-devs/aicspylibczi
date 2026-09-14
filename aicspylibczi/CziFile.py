@@ -511,7 +511,7 @@ class CziFile(object):
 
         return self.meta_root
 
-    def read_subblock_metadata(self, unified_xml: bool = False, region: Tuple = None, **kwargs):
+    def read_subblock_metadata(self, unified_xml: bool = False, **kwargs):
         """
         Read the subblock specific metadata, ie time subblock was acquired / position at acquisition time etc.
 
@@ -520,10 +520,6 @@ class CziFile(object):
         unified_xml: bool
             If True return a single unified xml tree containing the requested subblock.
             If False return a list of tuples (dims, xml)
-        region
-            An optional spatial filter (x0, y0, width, height) in pixels. Only subblocks whose
-            logical rect intersects the region are returned. If omitted, all matching subblocks
-            are returned.
         kwargs
             The keywords below allow you to specify the dimensions that you wish to match. If you
             under-specify the constraints you can easily end up with a massive image stack.
@@ -547,8 +543,7 @@ class CziFile(object):
         """
         plane_constraints = self._get_coords_from_kwargs(kwargs)
         m_index = self._get_m_index_from_kwargs(kwargs)
-        region_bbox = self._bbox_from_region(region)
-        subblock_meta = self.reader.read_meta_from_subblock(plane_constraints, m_index, region_bbox)
+        subblock_meta = self.reader.read_meta_from_subblock(plane_constraints, m_index)
         if not unified_xml:
             return subblock_meta
         root = ET.Element("Subblocks")
@@ -617,7 +612,6 @@ class CziFile(object):
         region: Tuple = None,
         scale_factor: float = 1.0,
         background_color: Tuple = None,
-        scene_index: int = -1,
         **kwargs,
     ):
         """
@@ -641,10 +635,6 @@ class CziFile(object):
         background_color
             Background color used when pixel is outside of a sublock. If omitted, it defaults to black
             (r,g,b)=(0.0,0.0,0.0). Each color component is a float value between 0.0 and 1.0.
-        scene_index
-            Scene index (S dimension) to restrict compositing to. When set, only tiles belonging to
-            this scene are composited, preventing bleed-through from spatially overlapping scenes.
-            Defaults to -1 (all scenes, preserving existing behaviour).
         kwargs
             The keywords below allow you to specify the dimension plane that constrains the 2D data. If the
             constraints are underspecified the function will fail. ::
@@ -680,7 +670,7 @@ class CziFile(object):
             background_color = tmp
 
         img = self.reader.read_mosaic(
-            plane_constraints, scale_factor, region, background_color, scene_index
+            plane_constraints, scale_factor, region, background_color
         )
 
         return img

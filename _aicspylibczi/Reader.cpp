@@ -366,14 +366,13 @@ Reader::readSelected(libCZI::CDimCoordinate& plane_coord_,
 }
 
 SubblockMetaVec
-Reader::readSubblockMeta(libCZI::CDimCoordinate& plane_coord_, int index_m_, libCZI::IntRect region_)
+Reader::readSubblockMeta(libCZI::CDimCoordinate& plane_coord_, int index_m_)
 {
   SubblockMetaVec metaSubblocks;
   metaSubblocks.setMosaic(isMosaic());
 
-  bool hasRegion = (region_.w > 0 && region_.h > 0);
   SubblockSortable subBlockToFind(&plane_coord_, index_m_, isMosaic());
-  SubblockIndexVec matches = getMatches(subBlockToFind, hasRegion ? &region_ : nullptr);
+  SubblockIndexVec matches = getMatches(subBlockToFind);
 
   for_each(matches.begin(), matches.end(), [&](const SubblockIndexVec::value_type& match_) {
     size_t metaSize = 0;
@@ -464,8 +463,7 @@ ImagesContainerBase::ImagesContainerBasePtr
 Reader::readMosaic(libCZI::CDimCoordinate plane_coord_,
                    float scale_factor_,
                    libCZI::IntRect im_box_,
-                   libCZI::RgbFloatColor backGroundColor_,
-                   int scene_index_)
+                   libCZI::RgbFloatColor backGroundColor_)
 {
   // handle the case where the function was called with region=None (default to all)
   if (im_box_.w == -1 && im_box_.h == -1)
@@ -490,8 +488,6 @@ Reader::readMosaic(libCZI::CDimCoordinate plane_coord_,
   libCZI::ISingleChannelScalingTileAccessor::Options options;
   options.Clear();
   options.backGroundColor = backGroundColor_;
-  if (scene_index_ >= 0)
-    options.sceneFilter = libCZI::Utils::IndexSetFromString(std::to_wstring(scene_index_));
 
   // multiTile accessor is not compatible with S, it composites the Scenes and the mIndexs together
   auto multiTileComposite = accessor->Get(im_box_, &plane_coord_, scale_factor_, &options);
