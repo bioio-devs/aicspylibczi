@@ -120,9 +120,6 @@ jobs:
           path: wheelhouse/*.whl
 
   test_linux_wheel:
-    # cibuildwheel tests inside the manylinux container, whose CA bundle path the bundled
-    # libcurl was built against. Only a wheel installed on a different distribution proves
-    # https reads find the CA bundle at runtime.
     name: Linux wheel reads https (${{ matrix.python-version }})
     needs: [build_wheels]
     runs-on: ubuntu-latest
