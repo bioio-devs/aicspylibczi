@@ -117,8 +117,8 @@ img, shp = czi.read_image(S=0, C=0)
 The server must support HTTP range requests. If it does not, libCZI cannot read the file.
 
 On Linux, https servers are verified against the system CA bundle, found at runtime under
-`/etc/ssl` or `/etc/pki`. Set `SSL_CERT_FILE` (or `CURL_CA_BUNDLE`) or pass the `ca_info`
-stream option to use a different bundle. macOS and Windows use the OS certificate store.
+`/etc/ssl` or `/etc/pki`. Pass the `ca_info` stream option to use a different bundle.
+macOS and Windows use the OS certificate store.
 
 Pass `stream_options` to configure the underlying curl stream, for example to set a timeout
 or send a bearer token to an authenticated endpoint:

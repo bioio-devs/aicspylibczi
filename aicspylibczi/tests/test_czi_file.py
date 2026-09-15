@@ -579,8 +579,6 @@ def test_remote_reads_available():
 
 
 def test_https_read():
-    # The one test that needs the network: TLS verification only happens against a real
-    # https server, and on Linux depends on finding the system CA bundle at runtime.
     czi = CziFile(
         "https://allencell.s3.amazonaws.com/aics/hipsc_12x_overview_image_dataset/"
         "stitchedwelloverviewimagepath/05080558_3500003720_10X_20191220_D3.czi"
