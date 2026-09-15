@@ -119,9 +119,31 @@ jobs:
           name: build-wheels-${{ matrix.cibw-arch }}
           path: wheelhouse/*.whl
 
+  test_linux_wheel:
+    name: Linux wheel reads https (${{ matrix.python-version }})
+    needs: [build_wheels]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.9, "3.10", 3.11, 3.12, 3.13]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-wheels-manylinux_x86_64
+          path: wheelhouse
+      - run: |
+          tag="cp$(echo "${{ matrix.python-version }}" | tr -d .)"
+          pip install pytest wheelhouse/aicspylibczi-*-${tag}-*.whl
+          pytest aicspylibczi/tests -k test_https_read
+
   upload_all:
     name: Upload if release
-    needs: [build_wheels, build_sdist]
+    needs: [build_wheels, build_sdist, test_linux_wheel]
     runs-on: ubuntu-latest
     permissions:
       # IMPORTANT: this permission is mandatory for trusted publishing
