@@ -214,6 +214,9 @@ the whole file, so tile and plane access stays cheap on large remote images.</p>
 </pre></div>
 </div>
 <p>The server must support HTTP range requests. If it does not, libCZI cannot read the file.</p>
+<p>On Linux, https servers are verified against the system CA bundle, found at runtime under
+<code class="docutils literal notranslate"><span class="pre">/etc/ssl</span></code> or <code class="docutils literal notranslate"><span class="pre">/etc/pki</span></code>. Pass the <code class="docutils literal notranslate"><span class="pre">ca_info</span></code> stream option to use a different bundle.
+macOS and Windows use the OS certificate store.</p>
 <p>Pass <code class="docutils literal notranslate"><span class="pre">stream_options</span></code> to configure the underlying curl stream, for example to set a timeout
 or send a bearer token to an authenticated endpoint:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">czi</span> <span class="o">=</span> <span class="n">CziFile</span><span class="p">(</span>
