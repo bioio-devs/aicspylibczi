@@ -578,6 +578,14 @@ def test_remote_reads_available():
     assert remote_reads_available()
 
 
+def test_https_read():
+    czi = CziFile(
+        "https://allencell.s3.amazonaws.com/aics/hipsc_12x_overview_image_dataset/"
+        "stitchedwelloverviewimagepath/05080558_3500003720_10X_20191220_D3.czi"
+    )
+    assert czi.get_dims_shape()[0]["X"] == (0, 5925)
+
+
 @pytest.mark.raises(exception=ValueError)
 def test_stream_options_rejected_for_local_file(data_dir):
     CziFile(data_dir / "s_1_t_1_c_1_z_1.czi", stream_options={"timeout": 30})

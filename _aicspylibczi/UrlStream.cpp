@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <fstream>
 #include <sstream>
 #include <stdexcept>
 
@@ -87,6 +88,21 @@ createStreamFromUrl(const std::string& url_, const std::map<int, libCZI::Streams
   libCZI::StreamsFactory::CreateStreamInfo streamInfo;
   streamInfo.class_name = kCurlHttpStreamClass;
   streamInfo.property_bag = property_bag_;
+
+#if defined(__linux__)
+  using Props = libCZI::StreamsFactory::StreamProperties;
+  if (streamInfo.property_bag.count(Props::kCurlHttp_CaInfo) == 0 &&
+      streamInfo.property_bag.count(Props::kCurlHttp_CaInfoBlob) == 0) {
+    for (const char* path : { "/etc/ssl/certs/ca-certificates.crt", // Debian, Ubuntu, Arch
+                              "/etc/pki/tls/certs/ca-bundle.crt",   // RHEL, Fedora
+                              "/etc/ssl/ca-bundle.pem" }) {         // SUSE
+      if (std::ifstream(path).good()) {
+        streamInfo.property_bag.emplace(Props::kCurlHttp_CaInfo, libCZI::StreamsFactory::Property(path));
+        break;
+      }
+    }
+  }
+#endif
 
   auto stream = libCZI::StreamsFactory::CreateStream(streamInfo, url_);
   if (!stream) {
