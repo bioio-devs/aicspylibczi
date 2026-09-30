@@ -479,6 +479,45 @@ def test_two_mosaic_image(data_dir, fname, expects):
         assert img.shape == expects
 
 
+@pytest.mark.parametrize("fname", ["mosaic_test.czi"])
+def test_read_subblock_metadata_region_filters(data_dir, fname):
+    czi = CziFile(str(data_dir / fname))
+    all_meta = czi.read_subblock_metadata(C=0)
+    assert len(all_meta) == 2
+
+    left_only = czi.read_subblock_metadata(C=0, region=(0, 0, 64, 64))
+    assert len(left_only) == 1
+    assert left_only[0][0]["M"] == 0
+
+
+@pytest.mark.parametrize(
+    "fname, region",
+    [
+        ("mosaic_test.czi", (0, 0, 0, 0)),  # degenerate: must raise, not return all subblocks
+        ("mosaic_test.czi", (10000, 10000, 64, 64)),  # entirely outside the image
+    ],
+)
+@pytest.mark.raises(exception=PylibCZI_RegionSelectionException)
+def test_read_subblock_metadata_bad_region_raises(data_dir, fname, region):
+    czi = CziFile(str(data_dir / fname))
+    czi.read_subblock_metadata(C=0, region=region)
+
+
+@pytest.mark.parametrize("fname", ["mosaic_test.czi"])
+def test_read_mosaic_scene_index_selects_scene(data_dir, fname):
+    czi = CziFile(str(data_dir / fname))
+    full = czi.read_mosaic(C=0)
+    scene0 = czi.read_mosaic(C=0, scene_index=0)
+    assert np.array_equal(full, scene0)
+
+
+@pytest.mark.parametrize("fname, scene_index", [("mosaic_test.czi", 1), ("mosaic_test.czi", 99)])
+@pytest.mark.raises(exception=RuntimeError, match="Scene Index Not Valid")
+def test_read_mosaic_invalid_scene_index_raises(data_dir, fname, scene_index):
+    czi = CziFile(str(data_dir / fname))
+    czi.read_mosaic(C=0, scene_index=scene_index)
+
+
 @pytest.mark.parametrize(
     "fname, s_index, m_index, expected",
     [
