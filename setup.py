@@ -93,7 +93,8 @@ class CMakeBuild(build_ext):
             cmake_args += [
                 "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{}={}".format(cfg.upper(), extdir)
             ]
-            cmake_args += ["-DCMAKE_GENERATOR_PLATFORM=x64"]
+            windows_arch = "ARM64" if platform.machine() == "ARM64" else "x64"
+            cmake_args += ["-DCMAKE_GENERATOR_PLATFORM=" + windows_arch]
             build_args += ["--", "/m"]
         else:
             cmake_args += ["-DCMAKE_BUILD_TYPE=" + cfg]
