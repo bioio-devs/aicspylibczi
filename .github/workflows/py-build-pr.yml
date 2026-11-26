@@ -6,7 +6,7 @@ jobs:
     strategy:
       max-parallel: 6
       matrix:
-        python-version: [3.9, "3.10", 3.11, 3.12, 3.13]
+        python-version: ["3.10", 3.11, 3.12, 3.13, 3.14]
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
@@ -50,3 +50,17 @@ jobs:
       - name: Lint with flake8
         run: |
           flake8 aicspylibczi --count --verbose --max-line-length=127 --show-source --statistics
+
+  # The org ruleset requires a check named "Report Result" before merging.
+  results:
+    if: ${{ always() }}
+    needs: [python-test, lint]
+    runs-on: ubuntu-latest
+    name: Report Result
+    steps:
+      - run: exit 1
+        if: >-
+          ${{
+                contains(needs.*.result, 'failure')
+            || contains(needs.*.result, 'cancelled')
+          }}
