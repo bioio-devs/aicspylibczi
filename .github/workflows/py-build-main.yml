@@ -9,10 +9,12 @@ on:
 env:
   CIBW_TEST_COMMAND: pytest {project}/aicspylibczi/tests
   CIBW_TEST_EXTRAS: test
-  # skip python 3.6, 32-bit builds, and PyPy
-  CIBW_SKIP: cp36-* cp37-* cp38-* cp39-* *-win32 *-manylinux_i686 pp*
+  # skip 32-bit builds and PyPy, plus cp310-win_arm64 (no numpy wheel) and
+  # free-threaded Windows (bundled pybind11 cannot find the cp314t/cp315t libs)
+  CIBW_SKIP: "*-win32 *-manylinux_i686 pp* cp39-* cp310-win_arm64 cp314t-win_* cp315t-win_*"
   # manylinux2014 is EOL and numpy no longer ships wheels for it
   CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
+  CIBW_MANYLINUX_AARCH64_IMAGE: manylinux_2_28
 
 name: Python Build Main
 jobs:
@@ -87,6 +89,12 @@ jobs:
         include:
           - runs-on: ubuntu-latest
             cibw-arch: manylinux_x86_64
+          - runs-on: ubuntu-24.04-arm
+            cibw-arch: manylinux_aarch64
+          - runs-on: ubuntu-latest
+            cibw-arch: musllinux_x86_64
+          - runs-on: ubuntu-24.04-arm
+            cibw-arch: musllinux_aarch64
           - runs-on: macos-latest
             cibw-arch: macosx_x86_64
           - runs-on: macos-latest
@@ -95,6 +103,8 @@ jobs:
             cibw-arch: macosx_universal2
           - runs-on: windows-latest
             cibw-arch: win_amd64
+          - runs-on: windows-11-arm
+            cibw-arch: win_arm64
 
     steps:
       - uses: actions/checkout@v4
@@ -104,7 +114,11 @@ jobs:
       - uses: pypa/cibuildwheel@v4.3.5
         env:
           CIBW_BUILD: "*-${{ matrix.cibw-arch }}"
-          CIBW_BEFORE_ALL_LINUX: yum install -y zlib-devel libpng-devel openssl-devel
+          CIBW_BEFORE_ALL_LINUX: >
+            if command -v apk > /dev/null;
+            then apk add zlib-dev libpng-dev openssl-dev;
+            else yum install -y zlib-devel libpng-devel openssl-devel;
+            fi
           CIBW_TEST_EXTRAS: test
           CIBW_TEST_COMMAND: pytest {project}/aicspylibczi/tests
           CIBW_ARCHS_MACOS: x86_64 universal2 arm64
