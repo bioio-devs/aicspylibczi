@@ -85,7 +85,7 @@ target_include_directories(${TARGET_ONE} PUBLIC ${CMAKE_SOURCE_DIR}/libCZI/Src)
 target_link_libraries(${TARGET_ONE} INTERFACE libCZIStatic JxrDecodeStatic)
 add_dependencies(${TARGET_ONE} libCZIStatic JxrDecodeStatic)
 
-nanobind_add_module(${TARGET_TWO} NB_STATIC ${PYLIBCZI_C_SRC} ${PYLIBCZI_NANOBIND})
+nanobind_add_module(${TARGET_TWO} NB_STATIC FREE_THREADED ${PYLIBCZI_C_SRC} ${PYLIBCZI_NANOBIND})
 # nanobind requires C++17; libCZI keeps its own C++14 setting on its targets
 set_target_properties(${TARGET_TWO} PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED YES)
 target_include_directories(${TARGET_TWO} PUBLIC ${CMAKE_SOURCE_DIR}/libCZI/Src)

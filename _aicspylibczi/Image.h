@@ -89,8 +89,7 @@ template<typename T>
 inline bool
 Image::isTypeMatch()
 {
-  auto pt = s_pixelToTypeName[m_pixelType];
-  return (typeid(T).name() == s_pixelToTypeName[m_pixelType]);
+  return (typeid(T).name() == s_pixelToTypeName.at(m_pixelType));
 }
 
 /*!

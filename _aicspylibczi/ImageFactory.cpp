@@ -174,7 +174,7 @@ ImageFactory::constructImage(const std::shared_ptr<libCZI::IBitmapData>& bitmap_
   if (samples_per_pixel > 1)
     shape.emplace_back(samples_per_pixel);
 
-  auto imageFactoryFunction = s_pixelToImageConstructor[pixelType];
+  auto imageFactoryFunction = s_pixelToImageConstructor.at(pixelType);
   std::shared_ptr<Image> image =
     imageFactoryFunction(shape, pixelType, plane_coordinate_, box_, m_imgContainer.get(), mem_index_, index_m_);
   if (image == nullptr)
