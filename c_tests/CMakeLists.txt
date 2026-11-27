@@ -1,3 +1,8 @@
+if(NOT TARGET Python::Python)
+    message(STATUS "Python Development.Embed not found, skipping the C++ tests")
+    return()
+endif()
+
 
 set(UNIT_TEST_SOURCE_LIST test_Reader.cpp test_boundingboxes.cpp test_Iterator.cpp test_Image.cpp test_DimIndex.cpp
         test_main.cpp ../_aicspylibczi/pb_helpers.cpp)
@@ -20,6 +25,13 @@ add_custom_command(TARGET ${TARGET_NAME} PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_SOURCE_DIR}/c_tests/resources $<TARGET_FILE_DIR:${TARGET_NAME}>/resources
         COMMENT "Copying C++ test resources")
+
+if(WIN32)
+    # the embedded interpreter needs its dll beside the exe
+    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:${TARGET_NAME}> $<TARGET_FILE_DIR:${TARGET_NAME}>
+            COMMAND_EXPAND_LISTS)
+endif()
 
 if(DEFINED ENV{RUN_TESTS})
     add_custom_command(TARGET ${TARGET_NAME} POST_BUILD

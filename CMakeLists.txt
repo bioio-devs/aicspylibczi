@@ -56,7 +56,8 @@ set(CURL_DISABLE_LDAPS ON CACHE BOOL "" FORCE)
 
 add_subdirectory(libCZI)
 
-find_package(Python 3.10 COMPONENTS Interpreter Development REQUIRED)
+# Development.Embed (libpython) is only needed by c_tests and is absent from manylinux pythons
+find_package(Python 3.10 COMPONENTS Interpreter Development.Module OPTIONAL_COMPONENTS Development.Embed REQUIRED)
 add_subdirectory(nanobind)
 
 set(PYLIBCZI_C_SRC_HEADERS _aicspylibczi/Reader.h _aicspylibczi/helper_algorithms.h _aicspylibczi/exceptions.h _aicspylibczi/inc_libCZI.h
