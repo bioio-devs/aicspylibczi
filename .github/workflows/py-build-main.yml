@@ -9,9 +9,8 @@ on:
 env:
   CIBW_TEST_COMMAND: pytest {project}/aicspylibczi/tests
   CIBW_TEST_EXTRAS: test
-  # skip 32-bit builds and PyPy, plus cp310-win_arm64 (no numpy wheel) and
-  # free-threaded Windows (the build has not been verified with nanobind on cp314t/cp315t)
-  CIBW_SKIP: "*-win32 *-manylinux_i686 pp* cp39-* cp310-win_arm64 cp314t-win_* cp315t-win_*"
+  # skip 32-bit builds and PyPy, plus cp310-win_arm64 (no numpy wheel)
+  CIBW_SKIP: "*-win32 *-manylinux_i686 pp* cp39-* cp310-win_arm64"
   # manylinux2014 is EOL and numpy no longer ships wheels for it
   CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
   CIBW_MANYLINUX_AARCH64_IMAGE: manylinux_2_28
