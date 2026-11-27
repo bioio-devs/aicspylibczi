@@ -1,10 +1,14 @@
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
-#include <pybind11/embed.h>
+#include <Python.h>
 
-namespace py = pybind11;
+struct PythonInterpreter
+{
+  PythonInterpreter() { Py_Initialize(); }
+  ~PythonInterpreter() { Py_Finalize(); }
+};
 
-py::scoped_interpreter guard{};
+PythonInterpreter guard;
 
 TEST_CASE("cast_test", "Is FILE * default constructible")
 {

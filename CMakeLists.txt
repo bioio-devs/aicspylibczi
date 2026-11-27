@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 set(CMAKE_MACOSX_RPATH 1)
 
 IF (APPLE)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version" FORCE)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "Minimum OS X deployment version" FORCE)
 ENDIF(APPLE)
 
 project(_aicspylibczi)
@@ -16,20 +16,16 @@ project(_aicspylibczi)
 set(CMAKE_CXX_STANDARD 14)
 
 IF (WIN32)
-    set(PYBIND11_CPP_STANDARD /std:c++14)
 ELSE()
     # linking with 'thread' is necessary if we use std::thread and related under Linux it seems
     #   otherwise - the program simply crashes (no build-error)
     #set(CMAKE_C_COMPILER clang)
     #set(CMAKE_CXX_COMPILER clang++)
-    set(PYBIND11_CPP_STANDARD -std=c++14)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -std=c++14 -fPIC -O0 -g -D_FILE_OFFSET_BITS=64 -fvisibility=hidden")
     SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__ANSI__ -fPIC -D_FILE_OFFSET_BITS=64")
     add_compile_definitions(LINUXENV)
 
 ENDIF(WIN32)
-
-SET(pybind11_DIR ${CMAKE_CURRENT_LIST_DIR}/pybind11)
 
 add_compile_definitions(_LIBCZISTATICLIB)
 
@@ -59,9 +55,9 @@ set(CURL_DISABLE_LDAP ON CACHE BOOL "" FORCE)
 set(CURL_DISABLE_LDAPS ON CACHE BOOL "" FORCE)
 
 add_subdirectory(libCZI)
-add_subdirectory(pybind11)
 
-message(STATUS "Found pybind11 v${pybind11_VERSION}: ${pybind11_INCLUDE_DIRS}")
+find_package(Python 3.10 COMPONENTS Interpreter Development REQUIRED)
+add_subdirectory(nanobind)
 
 set(PYLIBCZI_C_SRC_HEADERS _aicspylibczi/Reader.h _aicspylibczi/helper_algorithms.h _aicspylibczi/exceptions.h _aicspylibczi/inc_libCZI.h
         _aicspylibczi/IndexMap.h _aicspylibczi/Image.h _aicspylibczi/TypedImage.h _aicspylibczi/ImageFactory.h
@@ -74,7 +70,7 @@ set(PYLIBCZI_C_SRC _aicspylibczi/Reader.cpp _aicspylibczi/IndexMap.cpp _aicspyli
         _aicspylibczi/pb_caster_SubblockMetaVec.h _aicspylibczi/constants.cpp _aicspylibczi/DimIndex.cpp
         _aicspylibczi/StreamImplLockingRead.cpp _aicspylibczi/UrlStream.cpp)
 
-set(PYLIBCZI_PYBIND11 _aicspylibczi/pb_bindings.cpp _aicspylibczi/pb_helpers.h _aicspylibczi/pb_helpers.cpp _aicspylibczi/pb_caster_ImagesContainer.h
+set(PYLIBCZI_NANOBIND _aicspylibczi/pb_bindings.cpp _aicspylibczi/pb_helpers.h _aicspylibczi/pb_helpers.cpp _aicspylibczi/pb_caster_ImagesContainer.h
         _aicspylibczi/pb_caster_BytesIO.h _aicspylibczi/pb_caster_libCZI_DimensionIndex.h _aicspylibczi/CSimpleStreamImplFromFd.h
         _aicspylibczi/CSimpleStreamImplFromFd.cpp _aicspylibczi/pb_caster_DimIndex.h
         _aicspylibczi/pb_stream_options.h)
@@ -88,7 +84,9 @@ target_include_directories(${TARGET_ONE} PUBLIC ${CMAKE_SOURCE_DIR}/libCZI/Src)
 target_link_libraries(${TARGET_ONE} INTERFACE libCZIStatic JxrDecodeStatic)
 add_dependencies(${TARGET_ONE} libCZIStatic JxrDecodeStatic)
 
-pybind11_add_module(${TARGET_TWO} MODULE ${PYLIBCZI_C_SRC} ${PYLIBCZI_PYBIND11})
+nanobind_add_module(${TARGET_TWO} NB_STATIC ${PYLIBCZI_C_SRC} ${PYLIBCZI_NANOBIND})
+# nanobind requires C++17; libCZI keeps its own C++14 setting on its targets
+set_target_properties(${TARGET_TWO} PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED YES)
 target_include_directories(${TARGET_TWO} PUBLIC ${CMAKE_SOURCE_DIR}/libCZI/Src)
 target_link_libraries(${TARGET_TWO} PRIVATE libCZIStatic JxrDecodeStatic)
 add_dependencies(${TARGET_TWO} libCZIStatic JxrDecodeStatic)

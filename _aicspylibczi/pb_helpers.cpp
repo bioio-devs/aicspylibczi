@@ -1,6 +1,4 @@
 #include <memory>
-#include <pybind11/numpy.h>
-#include <pybind11/pybind11.h>
 #include <set>
 #include <vector>
 
@@ -19,14 +17,14 @@ getAndFixShape(pylibczi::ImagesContainerBase* bptr_)
   return charSizes;
 }
 
-py::array
+nb::object
 packArray(pylibczi::ImagesContainerBase::ImagesContainerBasePtr& base_ptr_)
 {
   pylibczi::ImagesContainerBase* icBase = base_ptr_.release();
   std::vector<std::pair<char, size_t>> charSizes;
 
   charSizes = getAndFixShape(icBase);
-  py::array* arr;
+  nb::object arr;
 
   switch (icBase->pixelType()) {
     case libCZI::PixelType::Gray8:
@@ -49,18 +47,18 @@ packArray(pylibczi::ImagesContainerBase::ImagesContainerBasePtr& base_ptr_)
       // It is highly unlikely the this throw would ever be reached but it's here for completeness. If an unsupported
       // pixel type were encountered it would throw much eariler in the code.
   }
-  return *arr;
+  return arr;
 }
 
-py::list*
+nb::list
 packStringArray(pylibczi::SubblockMetaVec& metadata_)
 {
   metadata_.sort();
   auto charSizes = metadata_.getShape();
-  auto mylist = new py::list();
+  nb::list mylist;
   try {
     for (const auto& x : metadata_) {
-      mylist->append(py::make_tuple(x.getDimsAsChars(), py::cast(x.getString().c_str())));
+      mylist.append(nb::make_tuple(x.getDimsAsChars(), x.getString()));
     }
   } catch (exception& e) {
     std::cout << e.what() << std::endl;

@@ -3,9 +3,12 @@
 
 #include <iostream>
 #include <memory>
-#include <pybind11/numpy.h>
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
+#include <nanobind/nanobind.h>
+#include <nanobind/ndarray.h>
+#include <nanobind/stl/map.h>
+#include <nanobind/stl/pair.h>
+#include <nanobind/stl/string.h>
+#include <nanobind/stl/vector.h>
 #include <set>
 #include <vector>
 
@@ -14,34 +17,34 @@
 #include "Reader.h"
 #include "exceptions.h"
 
-namespace py = pybind11;
+namespace nb = nanobind;
 namespace pb_helpers {
 
-py::array
+nb::object
 packArray(pylibczi::ImagesContainerBase::ImagesContainerBasePtr& base_ptr_);
-py::list*
+nb::list
 packStringArray(pylibczi::SubblockMetaVec& metadata_);
 std::vector<std::pair<char, size_t>>
 getAndFixShape(pylibczi::ImagesContainerBase* bptr_);
 
 template<typename T>
-py::array*
+nb::object
 memoryToNpArray(pylibczi::ImagesContainerBase* bptr_, std::vector<std::pair<char, size_t>>& charSizes_)
 {
   pylibczi::ImagesContainer<T>* tptr = bptr_->getBaseAsTyped<T>();
 
-  std::vector<Py_ssize_t> shape(charSizes_.size(), 0);
+  std::vector<size_t> shape(charSizes_.size(), 0);
   std::transform(
     charSizes_.begin(), charSizes_.end(), shape.begin(), [](const std::pair<char, size_t>& a_) { return a_.second; });
 
   T* mptr = tptr->releaseMemory();
 
-  py::capsule freeWhenDone(mptr, [](void* f_) {
+  nb::capsule freeWhenDone(mptr, [](void* f_) noexcept {
     T* ptr = reinterpret_cast<T*>(f_);
     delete[] ptr;
   });
 
-  return new py::array_t<T>(shape, mptr, freeWhenDone);
+  return nb::cast(nb::ndarray<nb::numpy, T>(mptr, shape.size(), shape.data(), freeWhenDone));
 }
 
 }

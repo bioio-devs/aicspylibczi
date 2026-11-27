@@ -3,52 +3,24 @@
 
 #include "ImagesContainer.h"
 #include "pb_helpers.h"
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
 
-namespace pybind11 {
+namespace nanobind {
 namespace detail {
 template<>
 struct type_caster<pylibczi::ImagesContainerBase::ImagesContainerBasePtr>
 {
-public:
-  /**
-   * This macro establishes the name pylibczi::ImageContainerBasePtr in
-   * function signatures and declares a local variable
-   * 'value' of type pylibczi::ImageContainerBasePtr
-   */
-  PYBIND11_TYPE_CASTER(pylibczi::ImagesContainerBase::ImagesContainerBasePtr, _("numpy.ndarray"));
+  NB_TYPE_CASTER(pylibczi::ImagesContainerBase::ImagesContainerBasePtr, const_name("numpy.ndarray"))
 
-  /**
-   * Conversion part 1 (Python->C++): convert a PyObject( numpy.ndarray ) into an ImageContainerBasePtr
-   * instance or return false upon failure. The second argument
-   * indicates whether implicit conversions should be applied.
-   */
-  bool load(handle src_, bool)
+  /** Python->C++ is not supported, this caster only returns images to python. */
+  bool from_python(handle, uint8_t, cleanup_list*) noexcept { return false; }
+
+  /** C++->Python: convert the images in the container to a numpy.ndarray. */
+  static handle from_cpp(pylibczi::ImagesContainerBase::ImagesContainerBasePtr&& src_, rv_policy, cleanup_list*)
   {
-    // Currently not used, if casting a numpy.ndarray to an ImagesContainer is required this must be implemented=
-
-    /* Extract PyObject from handle */
-    PyObject* source = src_.ptr();
-    return (false); // no conversion is done here so if this code is called always fail
-  }
-
-  /**
-   * Conversion part 2 (C++ -> Python): convert a pylibCZI::ImagesContainer instance into
-   * a Python object, specifically a numpy.ndarray. The second and third arguments are used to
-   * indicate the return value policy and parent object (for
-   * ``return_value_policy::reference_internal``) and are generally
-   * ignored by implicit casters.
-   */
-  static handle cast(pylibczi::ImagesContainerBase::ImagesContainerBasePtr src_,
-                     return_value_policy /* policy */,
-                     handle /* parent */)
-  {
-    return pb_helpers::packArray(
-      src_); // the helper takes the ImagesContainerBasePtr and converts it to a numpy ndarray
+    return pb_helpers::packArray(src_).release();
   }
 };
 }
-} // namespace pybind11::detail
+} // namespace nanobind::detail
 
 #endif //_PYLIBCZI_PB_CASTER_IMAGEVECTOR_H
