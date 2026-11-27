@@ -1,6 +1,9 @@
-#include <pybind11/gil.h>
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
+#include <nanobind/nanobind.h>
+#include <nanobind/stl/map.h>
+#include <nanobind/stl/pair.h>
+#include <nanobind/stl/string.h>
+#include <nanobind/stl/unique_ptr.h>
+#include <nanobind/stl/vector.h>
 
 #include "IndexMap.h"
 #include "Reader.h"
@@ -16,28 +19,23 @@
 #include "pb_caster_libCZI_DimensionIndex.h"
 #include "pb_stream_options.h"
 
-PYBIND11_MODULE(_aicspylibczi, m)
+NB_MODULE(_aicspylibczi, m)
 {
 
-  namespace py = pybind11;
+  namespace nb = nanobind;
 
-  m.doc() = "aicspylibczi C++ extension for reading ZISRAW/CZI files"; // optional
-                                                                       // module
-                                                                       // docstring
+  m.doc() = "aicspylibczi C++ extension for reading ZISRAW/CZI files";
 
-  py::register_exception<pylibczi::FilePtrException>(m, "PylibCZI_BytesIO2FilePtrException");
-  py::register_exception<pylibczi::PixelTypeException>(m, "PylibCZI_PixelTypeException");
-  py::register_exception<pylibczi::RegionSelectionException>(m, "PylibCZI_RegionSelectionException");
-  py::register_exception<pylibczi::ImageAccessUnderspecifiedException>(m,
-                                                                       "PylibCZI_ImageAccessUnderspecifiedException");
-  py::register_exception<pylibczi::ImageIteratorException>(m, "PylibCZI_ImageIteratorException");
-  py::register_exception<pylibczi::ImageSplitChannelException>(m, "PylibCZI_ImageSplitChannelException");
-  py::register_exception<pylibczi::ImageCopyAllocFailed>(m, "PylibCZI_ImageCopyAllocFailed");
-  py::register_exception<pylibczi::CdimSelectionZeroImagesException>(m, "PylibCZI_CDimSpecSelectedNoImagesException");
-  py::register_exception<pylibczi::CDimCoordinatesOverspecifiedException>(
-    m, "PylibCZI_CDimCoordinatesOverspecifiedException");
-  py::register_exception<pylibczi::CDimCoordinatesUnderspecifiedException>(
-    m, "PylibCZI_CDimCoordinatesUnderspecifiedException");
+  nb::exception<pylibczi::FilePtrException>(m, "PylibCZI_BytesIO2FilePtrException");
+  nb::exception<pylibczi::PixelTypeException>(m, "PylibCZI_PixelTypeException");
+  nb::exception<pylibczi::RegionSelectionException>(m, "PylibCZI_RegionSelectionException");
+  nb::exception<pylibczi::ImageAccessUnderspecifiedException>(m, "PylibCZI_ImageAccessUnderspecifiedException");
+  nb::exception<pylibczi::ImageIteratorException>(m, "PylibCZI_ImageIteratorException");
+  nb::exception<pylibczi::ImageSplitChannelException>(m, "PylibCZI_ImageSplitChannelException");
+  nb::exception<pylibczi::ImageCopyAllocFailed>(m, "PylibCZI_ImageCopyAllocFailed");
+  nb::exception<pylibczi::CdimSelectionZeroImagesException>(m, "PylibCZI_CDimSpecSelectedNoImagesException");
+  nb::exception<pylibczi::CDimCoordinatesOverspecifiedException>(m, "PylibCZI_CDimCoordinatesOverspecifiedException");
+  nb::exception<pylibczi::CDimCoordinatesUnderspecifiedException>(m, "PylibCZI_CDimCoordinatesUnderspecifiedException");
 
   m.def("curl_stream_available",
         &pylibczi::curlStreamAvailable,
@@ -48,33 +46,33 @@ PYBIND11_MODULE(_aicspylibczi, m)
 
   // Releases the GIL for the duration of the bound C++ call so a slow read
   // (e.g. an HTTP range request on a remote CZI) doesn't stall other Python
-  // threads. See https://pybind11.readthedocs.io/en/stable/advanced/misc.html#global-interpreter-lock-gil
-  using ReleaseGil = py::call_guard<py::gil_scoped_release>;
+  // threads. See https://nanobind.readthedocs.io/en/latest/ownership.html
+  using ReleaseGil = nb::call_guard<nb::gil_scoped_release>;
 
-  py::class_<libCZI::IntRect>(m, "BBox")
-    .def(py::init<>())
+  nb::class_<libCZI::IntRect>(m, "BBox")
+    .def(nb::init<>())
     .def("__eq__",
          [](const libCZI::IntRect& a, const libCZI::IntRect& b) {
            return (a.x == b.x && a.y == b.y && a.w == b.w && a.h == b.h);
          })
-    .def_readwrite("x", &libCZI::IntRect::x)
-    .def_readwrite("y", &libCZI::IntRect::y)
-    .def_readwrite("w", &libCZI::IntRect::w)
-    .def_readwrite("h", &libCZI::IntRect::h);
+    .def_rw("x", &libCZI::IntRect::x)
+    .def_rw("y", &libCZI::IntRect::y)
+    .def_rw("w", &libCZI::IntRect::w)
+    .def_rw("h", &libCZI::IntRect::h);
 
-  py::class_<pylibczi::Reader>(m, "Reader")
-    .def(py::init<std::shared_ptr<libCZI::IStream>>(), ReleaseGil())
+  nb::class_<pylibczi::Reader>(m, "Reader")
+    .def(nb::init<std::shared_ptr<libCZI::IStream>>(), ReleaseGil())
     .def_static(
       "from_url",
-      [](const std::string& url_, const py::dict& options_) {
+      [](const std::string& url_, const nb::dict& options_) {
         pylibczi::throwIfCurlStreamUnavailable();
         auto propertyBag = pb_helpers::streamPropertyBagFromDict(options_);
-        py::gil_scoped_release release;
+        nb::gil_scoped_release release;
         auto stream = pylibczi::createStreamFromUrl(url_, propertyBag);
         return std::unique_ptr<pylibczi::Reader>(new pylibczi::Reader(std::move(stream)));
       },
-      py::arg("url"),
-      py::arg("options") = py::dict(),
+      nb::arg("url"),
+      nb::arg("options") = nb::dict(),
       "Open a CZI file from an http/https URL.")
     .def("is_mosaic", &pylibczi::Reader::isMosaic, ReleaseGil())
     .def("has_consistent_shape", &pylibczi::Reader::shapeIsConsistent, ReleaseGil())
@@ -84,10 +82,10 @@ PYBIND11_MODULE(_aicspylibczi, m)
     .def("read_meta", &pylibczi::Reader::readMeta, ReleaseGil())
     .def("read_selected",
          &pylibczi::Reader::readSelected,
-         py::arg("plane_coord"),
-         py::arg("index_m") = -1,
-         py::arg("cores") = 3,
-         py::arg("region") = libCZI::IntRect{ 0, 0, -1, -1 },
+         nb::arg("plane_coord"),
+         nb::arg("index_m") = -1,
+         nb::arg("cores") = 3,
+         nb::arg("region") = libCZI::IntRect{ 0, 0, -1, -1 },
          ReleaseGil())
     .def("read_meta_from_subblock", &pylibczi::Reader::readSubblockMeta, ReleaseGil())
     .def("read_mosaic", &pylibczi::Reader::readMosaic, ReleaseGil())
@@ -101,24 +99,24 @@ PYBIND11_MODULE(_aicspylibczi, m)
     .def("read_all_mosaic_tile_bounding_boxes", &pylibczi::Reader::mosaicTileBoundingBoxes, ReleaseGil())
     .def(
       "read_all_mosaic_scene_bounding_boxes", &pylibczi::Reader::allMosaicSceneBoundingBoxes, ReleaseGil())
-    .def_property_readonly("pixel_type", &pylibczi::Reader::pixelType, ReleaseGil());
+    .def_prop_ro("pixel_type", &pylibczi::Reader::pixelType, ReleaseGil());
 
-  py::class_<pylibczi::IndexMap>(m, "IndexMap")
-    .def(py::init<>())
+  nb::class_<pylibczi::IndexMap>(m, "IndexMap")
+    .def(nb::init<>())
     .def("is_m_index_valid", &pylibczi::IndexMap::isMIndexValid)
     .def("dim_index", &pylibczi::IndexMap::dimIndex)
     .def("m_index", &pylibczi::IndexMap::mIndex);
 
-  py::class_<libCZI::CDimCoordinate>(m, "DimCoord").def(py::init<>()).def("set_dim", &libCZI::CDimCoordinate::Set);
+  nb::class_<libCZI::CDimCoordinate>(m, "DimCoord").def(nb::init<>()).def("set_dim", &libCZI::CDimCoordinate::Set);
 
-  py::class_<libCZI::RgbFloatColor>(m, "RgbFloat")
-    .def(py::init<>())
-    .def_readwrite("r", &libCZI::RgbFloatColor::r)
-    .def_readwrite("g", &libCZI::RgbFloatColor::g)
-    .def_readwrite("b", &libCZI::RgbFloatColor::b);
+  nb::class_<libCZI::RgbFloatColor>(m, "RgbFloat")
+    .def(nb::init<>())
+    .def_rw("r", &libCZI::RgbFloatColor::r)
+    .def_rw("g", &libCZI::RgbFloatColor::g)
+    .def_rw("b", &libCZI::RgbFloatColor::b);
 
-  py::class_<pylibczi::SubblockSortable>(m, "TileInfo")
-    //   .def(py::init<pylibczi::SubblockSortable>())
-    .def_property_readonly("dimension_coordinates", &pylibczi::SubblockSortable::getDimsAsChars)
-    .def_property_readonly("m_index", &pylibczi::SubblockSortable::mIndex);
+  nb::class_<pylibczi::SubblockSortable>(m, "TileInfo")
+    //   .def(nb::init<pylibczi::SubblockSortable>())
+    .def_prop_ro("dimension_coordinates", &pylibczi::SubblockSortable::getDimsAsChars)
+    .def_prop_ro("m_index", &pylibczi::SubblockSortable::mIndex);
 }

@@ -1,6 +1,7 @@
 #ifndef _PYLIBCZI_READER_H
 #define _PYLIBCZI_READER_H
 
+#include <atomic>
 #include <cstdio>
 #include <functional>
 #include <iostream>
@@ -84,7 +85,7 @@ class Reader
 
   std::shared_ptr<CCZIReader> m_czireader; // required for cast in libCZI
   libCZI::SubBlockStatistics m_statistics;
-  libCZI::PixelType m_pixelType;
+  std::atomic<libCZI::PixelType> m_pixelType; // lazily set by pixelType(), which can run on several threads
   bool m_specifyScene;
 
 public:
@@ -334,9 +335,12 @@ public:
   std::string pixelType()
   {
     // each subblock can apparently have a different pixelType 🙄
-    if (m_pixelType == libCZI::PixelType::Invalid)
-      m_pixelType = getFirstPixelType();
-    return libCZI::Utils::PixelTypeToInformalString(m_pixelType);
+    libCZI::PixelType pixelType = m_pixelType;
+    if (pixelType == libCZI::PixelType::Invalid) {
+      pixelType = getFirstPixelType();
+      m_pixelType = pixelType;
+    }
+    return libCZI::Utils::PixelTypeToInformalString(pixelType);
   }
 
 private:

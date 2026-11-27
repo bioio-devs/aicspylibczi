@@ -5,7 +5,8 @@
 #include <sstream>
 #include <string>
 
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
+#include <nanobind/stl/string.h>
 
 #include "UrlStream.h"
 #include "inc_libCZI.h"
@@ -14,7 +15,7 @@ namespace pb_helpers {
 
 /// @brief Convert a python value to a libCZI stream property of the requested type.
 inline libCZI::StreamsFactory::Property
-streamPropertyFromPyObject(const pybind11::handle& value_,
+streamPropertyFromPyObject(const nanobind::handle& value_,
                            libCZI::StreamsFactory::Property::Type type_,
                            const std::string& name_)
 {
@@ -22,19 +23,19 @@ streamPropertyFromPyObject(const pybind11::handle& value_,
   try {
     switch (type_) {
       case Type::Int32:
-        return libCZI::StreamsFactory::Property(value_.cast<std::int32_t>());
+        return libCZI::StreamsFactory::Property(nanobind::cast<std::int32_t>(value_));
       case Type::Float:
-        return libCZI::StreamsFactory::Property(value_.cast<float>());
+        return libCZI::StreamsFactory::Property(nanobind::cast<float>(value_));
       case Type::Double:
-        return libCZI::StreamsFactory::Property(value_.cast<double>());
+        return libCZI::StreamsFactory::Property(nanobind::cast<double>(value_));
       case Type::Boolean:
-        return libCZI::StreamsFactory::Property(value_.cast<bool>());
+        return libCZI::StreamsFactory::Property(nanobind::cast<bool>(value_));
       case Type::String:
-        return libCZI::StreamsFactory::Property(value_.cast<std::string>());
+        return libCZI::StreamsFactory::Property(nanobind::cast<std::string>(value_));
       default:
         break;
     }
-  } catch (const pybind11::cast_error&) {
+  } catch (const nanobind::cast_error&) {
     std::ostringstream msg;
     msg << "Stream option '" << name_ << "' could not be converted to the type libCZI expects for it.";
     throw std::invalid_argument(msg.str());
@@ -46,11 +47,11 @@ streamPropertyFromPyObject(const pybind11::handle& value_,
 
 /// @brief Convert a python dict of stream options into a libCZI property bag.
 inline std::map<int, libCZI::StreamsFactory::Property>
-streamPropertyBagFromDict(const pybind11::dict& options_)
+streamPropertyBagFromDict(const nanobind::dict& options_)
 {
   std::map<int, libCZI::StreamsFactory::Property> propertyBag;
   for (const auto& item : options_) {
-    const auto name = item.first.cast<std::string>();
+    const auto name = nanobind::cast<std::string>(item.first);
     const auto resolved = pylibczi::resolveStreamOption(name);
     if (resolved.first < 0) {
       std::ostringstream msg;

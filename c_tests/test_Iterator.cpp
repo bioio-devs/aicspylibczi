@@ -5,12 +5,9 @@
 #include "catch.hpp"
 #include "helper_algorithms.h"
 #include <iostream>
-#include <pybind11/numpy.h>
-#include <pybind11/pybind11.h>
 
 using namespace pylibczi;
 
-namespace py = pybind11;
 
 TEST_CASE("iterator_source", "[iterator_src]")
 {

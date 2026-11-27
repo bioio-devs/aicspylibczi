@@ -13,7 +13,7 @@ CZI microscopy files. Our approach is to use Zeiss's libCZI and leverage that to
 create a C++ tool that extracts the desired image data and metadata in a structure
 that performs well with respect to speed and memory usage and enables mapping into
 a python numpy.ndarray. The bindings to create a python module are done using
-pybind11 and are then wrapped in python class providing a more pythonic interface
+nanobind and are then wrapped in python class providing a more pythonic interface
 into the module that the direct bindings.
 
 Our goal with the 3.\* API changes is:

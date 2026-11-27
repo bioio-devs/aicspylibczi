@@ -1,3 +1,8 @@
+if(NOT TARGET Python::Python)
+    message(STATUS "Python Development.Embed not found, skipping the C++ tests")
+    return()
+endif()
+
 
 set(UNIT_TEST_SOURCE_LIST test_Reader.cpp test_boundingboxes.cpp test_Iterator.cpp test_Image.cpp test_DimIndex.cpp
         test_main.cpp ../_aicspylibczi/pb_helpers.cpp)
@@ -6,10 +11,10 @@ set(TARGET_EXE libczi+py)
 add_compile_definitions(_STATICLIBBUILD)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
-#add_subdirectory(../pybind11)
-include_directories(../_aicspylibczi ../pybind11/include ${CMAKE_BINARY_DIR}/libCZI/Src/libCZI)
+include_directories(../_aicspylibczi ${CMAKE_BINARY_DIR}/libCZI/Src/libCZI)
 add_executable(${TARGET_NAME} ${UNIT_TEST_SOURCE_LIST})
-target_link_libraries(${TARGET_NAME} PRIVATE libczi_c++_extension libCZIStatic JxrDecodeStatic pybind11::embed)
+target_link_libraries(${TARGET_NAME} PRIVATE libczi_c++_extension libCZIStatic JxrDecodeStatic nanobind-static Python::Python)
+set_target_properties(${TARGET_NAME} PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED YES)
 add_dependencies(${TARGET_NAME} libczi_c++_extension libCZIStatic JxrDecodeStatic )
 
 
@@ -20,6 +25,13 @@ add_custom_command(TARGET ${TARGET_NAME} PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_SOURCE_DIR}/c_tests/resources $<TARGET_FILE_DIR:${TARGET_NAME}>/resources
         COMMENT "Copying C++ test resources")
+
+if(WIN32)
+    # the embedded interpreter needs its dll beside the exe
+    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:${TARGET_NAME}> $<TARGET_FILE_DIR:${TARGET_NAME}>
+            COMMAND_EXPAND_LISTS)
+endif()
 
 if(DEFINED ENV{RUN_TESTS})
     add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
